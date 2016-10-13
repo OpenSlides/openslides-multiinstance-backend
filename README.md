@@ -75,10 +75,24 @@ Check
 # curl -H 'Content-Type: application/vnd.api+json' http://127.0.0.1:5000/api/versions | json_pp
 # curl -X POST --data-binary @example_instance.json -H 'Content-Type: application/vnd.api+json' http://127.0.0.1:5000/api/instances | json_pp
 ```
+- add
+```
+127.0.0.1 konferenz.local
+```
+to /etc/hosts
 
+- go to http://konferenz.local in your browser
+
+MISC
+====
 
 - If rkt messed up your networking:
 
 ```
 # sudo rkt gc --grace-period=0
 ```
+
+Credits
+=======
+
+The ansible scripts are based on scripts made by @ostcar.
