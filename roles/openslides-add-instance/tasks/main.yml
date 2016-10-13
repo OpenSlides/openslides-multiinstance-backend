@@ -1,0 +1,43 @@
+---
+- name: Check variable openslides_secure_key
+  when: not openslides_secure_key
+  fail:
+    msg: The variable openslides_secure_key is not set.
+
+- set_fact:
+    pip_executable: pip
+    openslides_rkt_base: /usr/bin/rkt run
+      --port=8000-tcp:{{ openslides_instance_port }}
+      --volume volume-data,kind=host,source={{ openslides_instance_path }},readOnly=false
+      --volume volume-supervisord-conf,kind=host,source={{ openslides_instance_path }}/supervisord.conf {{ openslides_instance_image }} --user=1000 --group=1000 --exec
+    openslides_rkt_manage: /usr/bin/rkt run
+      --volume volume-data,kind=host,source={{ openslides_instance_path }},readOnly=false {{ openslides_instance_image }}
+      --user=1000 --group=1000 --set-env=PYTHONPATH=/data:/app --exec ./manage.py --
+
+- name: Create instance container
+  include: create_container.yml
+
+- name: Initialize database
+  include: init_instance_database.yml
+
+- name: Create systemd units
+  include: create_units.yml
+
+- stat: path={{ openslides_instance_path }}/static
+  register: static_path
+
+- name: Collect static
+  sudo: yes
+  when: static_path.stat.exists == False
+  sudo_user: root
+  command: '{{ openslides_rkt_manage }} collectstatic --noinput'
+
+- name: Create nginx configuration
+  include: create_nginx_conf.yml
+
+- name: restart nginx
+  sudo: yes
+  sudo_user: root
+  service:
+    name: nginx
+    state: reloaded

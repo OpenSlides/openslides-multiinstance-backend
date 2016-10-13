@@ -1,0 +1,29 @@
+{
+  "data":
+    {
+      "type": "instances",
+      "attributes": {
+          "slug": "konferenz",
+	  "db": "postgresql",
+	  "mode": "subdomain",
+          "parent_domain": "local",
+          "admin_first_name": "Max",
+          "admin_last_name": "Mustermann",
+          "admin_initial_password": "trump",
+          "event_name": "Konferenz 1",
+          "event_description": "Dies ist eine Test-Instanz",
+          "event_date": "2016-11-11",
+          "event_location": "Hamburg",
+          "event_organizer": "OpenSlides"
+      },
+      "relationships": {
+        "osversion": {
+          "data": {
+            "type": "osversions",
+            "id": "2.1"
+          }
+        }
+      }
+    }
+
+}

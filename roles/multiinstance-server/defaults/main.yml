@@ -1,0 +1,34 @@
+---
+# You have to set this to a random string. Do not share it.
+openslides_secure_key: false
+
+# The number of worker which should be started. CPU + 1 workers is advised.
+openslides_worker_count: 2
+
+# If set to true, the global nginx config is rewritten to listen on all hosts.
+openslides_nginx_global: false
+
+# Creates a virtual host which listens to the given names. This is ignored if
+# openslides_nginx_global is set to true.
+openslides_nginx_domains: []
+
+# Paths where the OpenSlides settings and data like the sqlite database are
+# saved.
+openslides_settings_path: /etc/openslides
+openslides_user_data_path: /usr/local/lib/openslides
+
+# Port on which openslides listens. This port should never we used directly but
+# only from nginx.
+openslides_port: 8400
+
+# Port on which nginx listens.
+openslides_nginx_port: 80
+
+# Activate nginx via socket activation. Currently this only works with
+# Archlinux.
+openslides_nginx_socket_activation: false
+
+# Only used if openslides_use_git is set to True. Specifies the OpenSlides repo
+# and the branch which is used.
+openslides_git_repo: https://github.com/OpenSlides/OpenSlides.git
+openslides_git_branch: master

@@ -1,0 +1,39 @@
+---
+
+- name: Create nginx global config
+  when: openslides_nginx_global
+  become: yes
+  template:
+    dest: /etc/nginx/nginx.conf
+    src: nginx.conf.j2
+  notify:
+  - Restart nginx
+
+- name: Create nginx socket
+  when: openslides_nginx_socket_activation
+  become: yes
+  register: createNginxSocket
+  template:
+    dest: /etc/systemd/system/nginx.socket
+    src: nginx.socket.j2
+
+- name: Reload systemd units
+  # TODO: there is a systemd module in ansible 2.2
+  when: createServices.changed or createNginxService or createNginxSocket
+  command: systemctl daemon-reload
+  become: yes
+
+- name: Start redis
+  become: yes
+  service:
+    name: redis
+    enabled: yes
+    state: started
+
+- name: Start and enalbe nginx without socket activation
+  when: not openslides_nginx_socket_activation
+  become: yes
+  service:
+    name: nginx.service
+    enabled: yes
+    state: started

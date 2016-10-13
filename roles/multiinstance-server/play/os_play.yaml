@@ -1,0 +1,11 @@
+---
+
+- name: Test play
+  hosts: all
+  gather_facts: no
+  tasks:
+    - name: Debug task
+      debug:
+        msg: Hello world!
+      tags:
+        - debug

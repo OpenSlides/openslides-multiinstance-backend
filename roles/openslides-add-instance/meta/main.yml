@@ -1,0 +1,22 @@
+galaxy_info:
+  author: André Böhlke
+  description: ab@bcoding.de
+
+  license: MIT
+
+  min_ansible_version: 2.2
+
+  platforms:
+  - name: Ubuntu
+    versions:
+    - xenial
+  - name: Archlinux
+
+
+  galaxy_tags:
+  - server
+
+dependencies: []
+  # List your role dependencies here, one per line.
+  # Be sure to remove the '[]' above if you add dependencies
+  # to this list.

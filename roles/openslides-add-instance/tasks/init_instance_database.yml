@@ -1,0 +1,55 @@
+---
+#- TODO: run migration
+#- TODO: add admin user
+
+- name: Ensure the PostgreSQL service is running
+  service: name=postgresql state=started enabled=yes
+
+- name: Ensure database is created
+  sudo_user: postgres
+  postgresql_db: name=openslides_{{ openslides_instance_slug }}
+                 encoding='UTF-8'
+                 lc_collate='en_US.UTF-8'
+                 lc_ctype='en_US.UTF-8'
+                 template='template0'
+                 login_host={{ postgres_host }}
+                 login_user={{ postgres_user }}
+                 login_password={{ postgres_password }}
+                 state=present
+
+- name: Ensure user has access to the database
+  sudo_user: postgres
+  postgresql_user: db=openslides_{{ openslides_instance_slug }}
+                   name=openslides_{{ openslides_instance_slug }}
+                   password={{ openslides_instance_db_password }}
+                   login_host={{ postgres_host }}
+                   login_user={{ postgres_user }}
+                   login_password={{ postgres_password }}
+                   priv=ALL
+                   state=present
+
+- name: Migrate static
+  sudo: yes
+  sudo_user: root
+  command: '{{ openslides_rkt_manage }} migrate --noinput'
+
+- name: Change admin password
+  sudo: yes
+  sudo_user: root
+  command: '{{ openslides_rkt_manage }} insecurechangepassword admin {{ openslides_instance_admin_initial_password }}'
+
+- name: Set instance configuration
+  sudo: yes
+  sudo_user: root
+  command: "{{ openslides_rkt_manage }} changeconfig {{ item.key }} {{ item.value }} --settings settings"
+  with_items:
+      - { key: 'general_event_name', value: '{{ openslides_instance_event_name }}' }
+      - { key: 'general_event_description', value: '{{ openslides_instance_event_description }}' }
+      - { key: 'general_event_date', value: '{{ openslides_instance_event_date }}' }
+      - { key: 'general_event_location', value: '{{ openslides_instance_event_location }}' }
+      - { key: 'general_event_organizer', value: '{{ openslides_instance_event_organizer }}' }
+
+# - name: Activate anonymous user
+#   when: openslidesMigratedDatabase.changed
+#   become: yes
+#   shell: echo "from openslides.core.config import config;config['general_system_enable_anonymous']=True" | {{ openslides_bin }} shell --pythonpath {{ openslides_settings_path }} --settings settings

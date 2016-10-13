@@ -1,0 +1,53 @@
+---
+- name: Create systemd units for openslides
+  sudo: yes
+  sudo_user: root
+  register: createInstanceService
+  template:
+    dest: '/etc/systemd/system/{{ openslides_instance_service_name }}.service'
+    src: "openslides_instance.service.j2"
+
+- name: Create systemd units for openslides
+  sudo: yes
+  sudo_user: root
+  register: createInstanceProxyService
+  template:
+    dest: '/etc/systemd/system/openslides_instance_proxy_{{ openslides_instance_id }}.service'
+    src: "openslides_instance_proxy.service.j2"
+
+- name: Create openslides proxy service unit for socket activation
+  sudo: yes
+  sudo_user: root
+  register: createInstanceSocket
+  template:
+    dest: '/etc/systemd/system/openslides_instance_proxy_{{ openslides_instance_id }}.socket'
+    src: "openslides_instance_proxy.socket.j2"
+
+- name: Reload systemd units
+  sudo: yes
+  sudo_user: root
+  when: createInstanceService.changed or createInstanceSocket.changed or createInstanceProxyService.changed
+  command: systemctl daemon-reload
+
+- name: Start and enalbe openslides
+  sudo: yes
+  sudo_user: root
+  service:
+    name: '{{ openslides_instance_service_name }}.service'
+    enabled: yes
+
+- name: Start and enalbe openslides
+  sudo: yes
+  sudo_user: root
+  service:
+    name: 'openslides_instance_proxy_{{ openslides_instance_id }}.service'
+    enabled: yes
+
+- name: Start and enalbe nginx via socket activation
+  sudo: yes
+  sudo_user: root
+  service:
+    name: 'openslides_instance_proxy_{{ openslides_instance_id }}.socket'
+    enabled: yes
+    state: started
+

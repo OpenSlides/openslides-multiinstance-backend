@@ -1,0 +1,15 @@
+[Unit]
+Description=Openslides Instance
+Wants=network.target
+Requires=nginx.service
+After=nginx.service
+
+[Service]
+# Environment="PYTHONPATH=/home/ab/git/OpenSlides:{{ openslides_instance_path }}"
+# ExecStart=/home/ab/.virtualenvs/os/bin/python /home/ab/git/OpenSlides/manage.py runserver localhost:23239
+ExecStart={{ openslides_rkt_base }} supervisord -- -c /supervisord.conf
+NonBlocking=true
+# User=openslides
+
+[Install]
+WantedBy=multi-user.target

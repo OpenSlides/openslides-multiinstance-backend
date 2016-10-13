@@ -1,0 +1,45 @@
+---
+# - name: Activate sources
+#   copy:
+#     dest: /etc/apt/sources.list
+#     content: |
+#       deb http://archive.ubuntu.com/ubuntu xenial main restricted universe
+
+- name: Install OpenSlides Dependencies
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - python3-bs4
+  - python3-djangorestframework
+  - python3-html5lib
+  - python3-django-jsonfield
+  - python3-natsort
+  - python3-reportlab
+  - python3-roman
+  - python3-setuptools
+  - python3-whoosh
+  - python3-pypdf2
+  - python3-pip
+  - redis-server
+
+- name: Install nginx
+  when: openslides_nginx_domains or openslides_nginx_global
+  become: yes
+  register: nginxInstalled
+  apt:
+    name: nginx
+    state: present
+
+- name: Stop and disable nginx, it will be configured later
+  when: nginxInstalled.changed and (openslides_nginx_domains or openslides_nginx_global)
+  service:
+    name: nginx.service
+    state: stopped
+    enabled: no
+
+- set_fact:
+    pip_executable: pip3
+    openslides_distro_fround: true
+    openslides_bin: /usr/local/bin/openslides
+    daphne_bin: /usr/local/bin/daphne
