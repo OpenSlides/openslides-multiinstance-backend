@@ -1,10 +1,16 @@
+from .schema import ObjectIDAttribute, ObjectAttribute
 from .schema import ToOneRelationship
-from .schema import ObjectIDAttribute, ObjectAttribute, ParentIDAttribute
 
 
 class SimpleApiObject:
     def __init__(self, *args, **kwargs):
         self.data = kwargs
+
+
+class OsDomain(SimpleApiObject):
+    type = 'osdomains'
+    id = ObjectIDAttribute("id")
+    domain = ObjectAttribute("domain")
 
 
 class OsVersion(SimpleApiObject):
@@ -24,6 +30,7 @@ class Instance(SimpleApiObject):
     db = ObjectAttribute("db")
 
     created_date = ObjectAttribute("created_date")
+    install_cmd = ObjectAttribute("install_pid")
 
     osversion = ToOneRelationship("osversion")
 
@@ -31,6 +38,9 @@ class Instance(SimpleApiObject):
     admin_first_name = ObjectAttribute("admin_first_name")
     admin_last_name = ObjectAttribute("admin_last_name")
     admin_initial_password = ObjectAttribute("admin_initial_password")
+    admin_username = ObjectAttribute("admin_username")
+
+    superadmin_password = ObjectAttribute("superadmin_password")
 
     # event properties
     event_name = ObjectAttribute("event_name")

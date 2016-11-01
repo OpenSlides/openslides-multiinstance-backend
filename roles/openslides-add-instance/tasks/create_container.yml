@@ -17,3 +17,8 @@
   template:
     dest: "{{ openslides_instance_path }}/supervisord.conf"
     src: supervisord.conf.j2
+
+- name: Create supervisor configuration
+  template:
+    dest: "{{ openslides_instance_path }}/502.html"
+    src: 502.html.j2

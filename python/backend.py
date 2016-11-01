@@ -1,17 +1,24 @@
 import copy
-import os
-import re
-import subprocess
-import uuid
 import json
+import os
+import random
+import string
+import uuid
 from datetime import datetime
-from time import strftime
+from optparse import OptionParser
+from subprocess import Popen
+
+import subprocess
 from flask import Flask
 from multiinstance.listing import InstanceListing, VersionListing
 from multiinstance.models import Instance, OsVersion
+
 import jsonapi.flask
 from jsonapi.base.schema import Schema
-from optparse import OptionParser
+from python.multiinstance.listing import DomainListing
+from python.multiinstance.models import OsDomain
+from python.multiinstance.utils import generate_username
+from python.utils import checkRequiredArguments
 
 parser = OptionParser()
 parser.add_option("-i", "--instance-meta-dir", dest="instance_meta_dir",
@@ -28,19 +35,14 @@ parser.add_option("-p", "--sudo-password", dest="sudo_password",
 
 (options, args) = parser.parse_args()
 
-
-def checkRequiredArguments(opts, parser):
-    missing_options = []
-    for opt in parser.option_list:
-        if re.match(r'^\[REQUIRED\]', opt.help) and eval('opts.' + opt.dest) == None:
-            missing_options.extend(opt._long_opts)
-    if len(missing_options) > 0:
-        parser.error('Missing REQUIRED parameters: ' + str(missing_options))
-
-
 checkRequiredArguments(options, parser)
 instance_meta_dir = options.instance_meta_dir
 versions_meta_dir = options.versions_meta_dir
+
+
+def randompassword():
+    chars = string.ascii_uppercase + string.ascii_lowercase + string.digits
+    return ''.join(random.choice(chars) for x in range(10))
 
 
 class Database(jsonapi.base.database.Database):
@@ -91,15 +93,17 @@ class Session(jsonapi.base.database.Session):
                 data['image'] = data['osversion'].data['image']
                 data['osversion'] = data['osversion'].data['id']
                 data['number'] = number
+                data['superadmin_password'] = randompassword()
+                data['admin_initial_password'] = randompassword()
+                data['admin_username'] = generate_username(data['admin_first_name'], data['admin_last_name'])
                 data['created_date'] = now.strftime('%Y-%m-%d')
+                playscript = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'play.py')
+                cmd = [options.python_ansible, playscript, '--instances-dir', options.instances_dir,
+                             '--sudo-password', options.sudo_password, '--instance-file', instance_filename]
+                data['install_cmd'] = ' '.join(cmd)
                 f.write(json.dumps(data, indent=4))
                 f.close()
-                mydir = os.path.dirname(os.path.abspath(__file__))
-                subprocess.call(['/home/openslides/.venv-ansible/bin/python',
-                                 os.path.join(mydir, 'play.py'),
-                                 '--instances-dir', options.instances_dir,
-                                 '--sudo-password', options.sudo_password,
-                                 '--instance-file', instance_filename])
+                Popen(['nohup'] + cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     def get(self, identifier, required=False):
         if identifier[0] == 'osversions':
@@ -111,6 +115,8 @@ class Session(jsonapi.base.database.Session):
             return self.instances.get()
         elif typename == 'osversions':
             return VersionListing(versions_meta_dir).get()
+        elif typename == 'osdomains':
+            return DomainListing(versions_meta_dir).get()
         pass
 
     def get_many(self, identifiers, required=False):
@@ -124,17 +130,7 @@ api = jsonapi.flask.FlaskAPI("/api", db=Database(), flask_app=app)
 
 api.add_type(Schema(Instance, typename='instances'))
 api.add_type(Schema(OsVersion, typename='osversions'))
-
-# @app.route("/instances")
-# def instances():
-#     result = []
-#     for instance in InstanceListing(instance_meta_dir).get():
-#         instance['type'] = "instance"
-#         result.append(instance)
-#
-#     return jsonify({
-#         data: result
-#     })
+api.add_type(Schema(OsDomain, typename='osdomains'))
 
 if __name__ == "__main__":
     app.run()

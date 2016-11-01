@@ -1,3 +1,6 @@
+Host System Setup
+=================
+
 Dependencies for backend.py
 ===========================
 
@@ -20,11 +23,13 @@ Dependencies for play.py
 # pip install -r requirements-ansible.txt
 ```
 
-Host System Setup
-=================
-
 Install rkt
 -----------
+
+See instructions at https://coreos.com/rkt/docs/latest/distributions.html
+
+Install and setup postgresql
+----------------------------
 
 ```
 # sudo aptitude install postgresql nginx
@@ -32,7 +37,7 @@ Install rkt
 ```
 
 Add admin user in postgresql
-----------------------------
+''''''''''''''''''''''''''''
 
 ```
 CREATE USER openslides_admin WITH PASSWORD 'asdf';
@@ -40,20 +45,21 @@ ALTER USER openslides_admin WITH SUPERUSER;
 ```
 
 Add generated locations/vhosts to nginx
----------------------------------------
+'''''''''''''''''''''''''''''''''''''''
 
 -> Add 'include /etc/nginx/openslides/*.locations;' in a vhost config of your choice
 -> Add 'include /etc/nginx/openslides/*.conf;' in main nginx.conf
 
 Configure redis and postgresql to listen to rkt network
--------------------------------------------------------
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 - in /etc/redis/redis.conf: bind 127.0.0.1 172.16.28.1
 - in /etc/postgresql/.../postgresql.conf: listen_addresses = 'localhost,172.16.28.1'
 - in /etc/postgresql/.../pg_hba.conf: host  all  all 172.16.28.0/24 md5
+- make sure postgresql is started after veth device is up
 
-Add OpenSlides version
-----------------------
+Add OpenSlides version and configure domains
+--------------------------------------------
 
 1. get docker image: sudo rkt --insecure-options=image fetch docker://openslides/openslides
 2. copy sha512 hash shown by rkt fetch
@@ -65,6 +71,15 @@ Add OpenSlides version
   "default": true|false
 }
 ```
+4. configure available domains in /srv/openslides/versions/domains.json, e.g.
+```
+[
+    {
+	"id": "1",
+	"domain": "instances.openslides.de"
+  }
+]
+```
 
 Check
 -----
@@ -72,12 +87,13 @@ Check
 ```
 # cd python
 # python backend.py --instance-meta-dir /srv/openslides/instances --versions-meta-dir /srv/openslides/versions --instances-dir /srv/openslides/instances --sudo-password <YOURPASSWORD> --python-ansible /home/$USER/.virtualenvs/ansible/bin/python
-# curl -H 'Content-Type: application/vnd.api+json' http://127.0.0.1:5000/api/versions | json_pp
+# curl -H 'Content-Type: application/vnd.api+json' http://127.0.0.1:5000/api/osversions | json_pp
+# curl -H 'Content-Type: application/vnd.api+json' http://127.0.0.1:5000/api/osdomains | json_pp
 # curl -X POST --data-binary @example_instance.json -H 'Content-Type: application/vnd.api+json' http://127.0.0.1:5000/api/instances | json_pp
 ```
 - add
 ```
-127.0.0.1 konferenz.local
+<<HOSTIP>> konferenz.local
 ```
 to /etc/hosts
 

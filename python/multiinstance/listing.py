@@ -1,9 +1,23 @@
 from collections import defaultdict
 
-from .models import Instance, OsVersion
+from .models import Instance, OsVersion, OsDomain
 from .utils import get_json_data
+import json
+import os
 from .systemd import Systemd
 import re
+
+
+class DomainListing:
+    def __init__(self, directory):
+        self.directory = directory
+
+    def get(self):
+        path = os.path.join(self.directory, 'domains.json')
+        domains = []
+        for domain_data in json.load(open(path, 'r'), encoding='utf-8'):
+            domains.append(OsDomain(**domain_data))
+        return domains
 
 
 class VersionListing:

@@ -1,7 +1,4 @@
 ---
-#- TODO: run migration
-#- TODO: add admin user
-
 - name: Ensure the PostgreSQL service is running
   service: name=postgresql state=started enabled=yes
 
@@ -28,7 +25,21 @@
                    priv=ALL
                    state=present
 
-- name: Migrate static
+- name: restart postgresql to make sure it bind to veth ip
+  sudo: yes
+  sudo_user: root
+  service:
+    name: postgresql
+    state: restarted
+
+- name: restart redis to make sure it bind to veth ip
+  sudo: yes
+  sudo_user: root
+  service:
+    name: redis
+    state: restarted
+
+- name: Migrate database
   sudo: yes
   sudo_user: root
   command: '{{ openslides_rkt_manage }} migrate --noinput'

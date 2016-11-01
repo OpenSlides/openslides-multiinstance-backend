@@ -1,15 +1,24 @@
 ---
 
-- getent: database=passwd key=openslides
+- getent: database=passwd
 
 - name: Check variable openslides_secure_key
   when: not openslides_secure_key
   fail:
     msg: The variable openslides_secure_key is not set.
 
+- name: get the username running the deploy
+  local_action: command whoami
+  register: username_on_the_host
+
+- debug: var=username_on_the_host
+
 - set_fact:
-    openslides_uid: "{{ getent_passwd.openslides[1] }}"
-    openslides_gid: "{{ getent_passwd.openslides[2] }}"
+    username_on_the_host: "{{username_on_the_host.stdout}}"
+
+- set_fact:
+    openslides_uid: "{{ getent_passwd[username_on_the_host][1] }}"
+    openslides_gid: "{{ getent_passwd[username_on_the_host][2] }}"
 
 - set_fact:
     pip_executable: pip
