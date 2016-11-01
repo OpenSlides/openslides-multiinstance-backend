@@ -41,7 +41,7 @@
 - name: Set instance configuration
   sudo: yes
   sudo_user: root
-  command: "{{ openslides_rkt_manage }} changeconfig {{ item.key }} {{ item.value }} --settings settings"
+  command: "{{ openslides_rkt_manage }} changeconfig '{{ item.key }}' '{{ item.value }}' --settings settings"
   with_items:
       - { key: 'general_event_name', value: '{{ openslides_instance_event_name }}' }
       - { key: 'general_event_description', value: '{{ openslides_instance_event_description }}' }

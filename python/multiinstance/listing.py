@@ -69,7 +69,11 @@ class InstanceListing:
 
 
             instance.data['osversion'] = VersionListing(self.directory).get_by_id(instance.osversion)
-            if instance.data['mode'] == 'subdomain':
+            try:
+                mode = instance.data['mode']
+            except KeyError:
+                mode = None
+            if mode == 'subdomain':
                 instance.data['url'] = 'http://{}.{}/'.format(instance.data['slug'], instance.data['parent_domain'])
             else:
                 instance.data['url'] = 'http://openslides.de/' + instance.data['slug']

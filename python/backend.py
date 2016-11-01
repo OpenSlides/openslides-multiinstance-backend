@@ -21,7 +21,7 @@ parser.add_option("--versions-meta-dir", dest="versions_meta_dir",
                   metavar="VERSIONS_META_DIR")
 parser.add_option("-d", "--instances-dir", dest="instances_dir",
                   help="[REQUIRED] directory containing instance data", metavar="INSTANCES_DIR")
-parser.add_option("-d", "--python-ansible", dest="python_ansible",
+parser.add_option("-a", "--python-ansible", dest="python_ansible",
                   help="[REQUIRED] python binary of ansible virtual environment", metavar="PYTHON_ANSIBLE")
 parser.add_option("-p", "--sudo-password", dest="sudo_password",
                   help="[REQUIRED] sudo password required to sudo in ansible script", metavar="SUDO_PASSWORD")
@@ -71,8 +71,12 @@ class Session(jsonapi.base.database.Session):
                 journal_file = os.path.join(instance_meta_dir, "openslides_instance.journal")
                 if os.path.isfile(journal_file):
                     with open(journal_file, 'rb') as fh:
-                        last = fh.readlines()[-1].decode()
-                        last_number = int(last.split(';')[0])
+                        lines = fh.readlines()
+                        if len(lines) == 0:
+                            last_number = 0
+                        else:
+                            last = lines[-1].decode()
+                            last_number = int(last.split(';')[0])
                 else:
                     last_number = 0
 
@@ -91,7 +95,7 @@ class Session(jsonapi.base.database.Session):
                 f.write(json.dumps(data, indent=4))
                 f.close()
                 mydir = os.path.dirname(os.path.abspath(__file__))
-                subprocess.call(['/home/ab/.virtualenvs/ansible/bin/python',
+                subprocess.call(['/home/openslides/.venv-ansible/bin/python',
                                  os.path.join(mydir, 'play.py'),
                                  '--instances-dir', options.instances_dir,
                                  '--sudo-password', options.sudo_password,

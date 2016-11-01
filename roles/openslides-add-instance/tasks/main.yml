@@ -1,18 +1,25 @@
 ---
+
+- getent: database=passwd key=openslides
+
 - name: Check variable openslides_secure_key
   when: not openslides_secure_key
   fail:
     msg: The variable openslides_secure_key is not set.
 
 - set_fact:
+    openslides_uid: "{{ getent_passwd.openslides[1] }}"
+    openslides_gid: "{{ getent_passwd.openslides[2] }}"
+
+- set_fact:
     pip_executable: pip
     openslides_rkt_base: /usr/bin/rkt run
       --port=8000-tcp:{{ openslides_instance_port }}
       --volume volume-data,kind=host,source={{ openslides_instance_path }},readOnly=false
-      --volume volume-supervisord-conf,kind=host,source={{ openslides_instance_path }}/supervisord.conf {{ openslides_instance_image }} --user=1000 --group=1000 --exec
+      --volume volume-supervisord-conf,kind=host,source={{ openslides_instance_path }}/supervisord.conf {{ openslides_instance_image }} --user={{ openslides_uid }} --group={{ openslides_gid }} --exec
     openslides_rkt_manage: /usr/bin/rkt run
       --volume volume-data,kind=host,source={{ openslides_instance_path }},readOnly=false {{ openslides_instance_image }}
-      --user=1000 --group=1000 --set-env=PYTHONPATH=/data:/app --exec ./manage.py --
+      --user={{ openslides_uid }} --group={{ openslides_gid }} --set-env=PYTHONPATH=/data:/app --exec ./manage.py --
 
 - name: Create instance container
   include: create_container.yml
