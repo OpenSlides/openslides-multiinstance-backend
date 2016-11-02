@@ -47,7 +47,7 @@
 - name: Change admin password
   sudo: yes
   sudo_user: root
-  command: '{{ openslides_rkt_manage }} insecurechangepassword admin {{ openslides_instance_admin_initial_password }}'
+  command: '{{ openslides_rkt_manage }} insecurechangepassword admin {{ openslides_instance_superadmin_password }}'
 
 - name: Set instance configuration
   sudo: yes

@@ -1,6 +1,8 @@
 Host System Setup
 =================
 
+- backend.py has to be executed with a user which can sudo without password
+
 Dependencies for backend.py
 ===========================
 
