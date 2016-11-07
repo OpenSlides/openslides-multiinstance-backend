@@ -8,7 +8,15 @@ def get_json_data(directory, prefix):
             if not filename.startswith(prefix) or not filename.endswith('.json'):
                 continue
             print("loading " + filename)
-            yield json.load(open(os.path.join(dirname, filename), 'r'), encoding='utf-8')
+            yield read_json_data(dirname, filename)
+
+
+def read_json_data(dirname, filename=None):
+    if filename is None:
+        filename = dirname
+    else:
+        filename = os.path.join(dirname, filename)
+    return json.load(open(filename, 'r'), encoding='utf-8')
 
 
 def generate_username(first_name, last_name):

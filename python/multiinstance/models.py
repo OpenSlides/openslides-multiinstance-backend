@@ -1,3 +1,7 @@
+import copy
+import json
+import os
+
 from .schema import ObjectIDAttribute, ObjectAttribute
 from .schema import ToOneRelationship
 
@@ -50,3 +54,18 @@ class Instance(SimpleApiObject):
     event_organizer = ObjectAttribute("event_organizer")
 
     state = ObjectAttribute("state")
+
+    def save(self, directory):
+        instance_filename = self.get_instance_filename(directory)
+        data = copy.copy(self.data)
+        # image and version are serialized with id
+        data['image'] = data['osversion'].data['image']
+        data['osversion'] = data['osversion'].data['id']
+
+        f = open(instance_filename, "w")
+        f.write(json.dumps(data, indent=4))
+        f.close()
+
+    def get_instance_filename(self, instance_meta_dir):
+        return os.path.join(instance_meta_dir, "openslides_instance_" + self.data['id'] + '.json')
+

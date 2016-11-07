@@ -1,0 +1,21 @@
+---
+- name: Start and enalbe openslides
+  sudo: yes
+  sudo_user: root
+  service:
+    name: 'openslides_instance_proxy_{{ openslides_instance_id }}.service'
+    enabled: no
+    state: loaded
+
+- name: Start and enalbe nginx via socket activation
+  sudo: yes
+  sudo_user: root
+  service:
+    name: 'openslides_instance_proxy_{{ openslides_instance_id }}.socket'
+    enabled: no
+    state: loaded
+
+- name: Create 502.html
+  template:
+    dest: "{{ openslides_instance_path }}/502.html"
+    src: 502.html.j2

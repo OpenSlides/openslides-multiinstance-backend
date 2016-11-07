@@ -1,0 +1,15 @@
+---
+- name: Remove rkt pod
+  become: yes
+  become_user: root
+  command: /usr/bin/rkt rm --uuid-file={{ openslides_instance_path }}/rkt-uuid
+
+- name: Remove rkt pod
+  become: yes
+  become_user: root
+  command: /usr/bin/rkt rm --uuid-file={{ openslides_instance_path }}/rkt-uuid
+
+- name: Remove instance directory
+  become: yes
+  become_user: openslides
+  file: path={{ openslides_instance_path }} state=absent recurse=yes

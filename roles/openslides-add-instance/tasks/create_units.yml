@@ -42,6 +42,8 @@
   service:
     name: 'openslides_instance_proxy_{{ openslides_instance_id }}.service'
     enabled: yes
+    state: started
+
 
 - name: Start and enalbe nginx via socket activation
   sudo: yes

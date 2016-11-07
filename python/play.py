@@ -18,6 +18,8 @@ from ansible.playbook.play import Play
 from ansible.plugins.callback import CallbackBase
 from ansible.vars import VariableManager
 
+from multiinstance.utils import read_json_data
+
 
 def random_string(length):
     return ''.join(
@@ -40,7 +42,10 @@ class ResultCallback(CallbackBase):
     def __init__(self, logfile):
         super(ResultCallback, self).__init__()
         self.logfile = logfile
-        self.logs = []
+        if path.exists(self.logfile):
+            self.logs = read_json_data(self.logfile)
+        else:
+            self.logs = []
 
     def v2_runner_item_on_failed(self, result):
         pass
@@ -79,6 +84,8 @@ parser.add_option("-d", "--instances-dir", dest="instances_dir",
                   help="[REQUIRED] directory containing instance data", metavar="INSTANCES_DIR")
 parser.add_option("-p", "--sudo-password", dest="sudo_password",
                   help="[REQUIRED] sudo password required to sudo in ansible script", metavar="SUDO_PASSWORD")
+parser.add_option("-r", "--role", dest="ansible_role",
+                  help="[REQUIRED] ansible role to execute (openslides-add-instance, openslides-remove-instance, openslides-stop-instance)", metavar="ANSIBLE_ROLE")
 
 (options, args) = parser.parse_args()
 
@@ -109,12 +116,14 @@ for instance_var in instance_data.keys():
     variables['openslides_instance_' + instance_var] = instance_data[instance_var]
 
 # check if instance if already created
-instance_path = path.join(options.instances_dir, variables['openslides_instance_slug'])
+instance_path = path.join(options.instances_dir, variables['openslides_instance_id'])
 
-if path.exists(instance_path) and not options.force:
+is_add = options.ansible_role == 'openslides-add-instance'
+if path.exists(instance_path) and is_add and not options.force:
     raise Exception("instance already created")
 
-os.makedirs(instance_path)
+if is_add:
+    os.makedirs(instance_path)
 
 variables['openslides_instance_path'] = instance_path
 
@@ -122,12 +131,12 @@ for key, value in variables.items():
     variable_manager.set_host_variable(Host(name='localhost'), key, value)
 
 loader = DataLoader()
-options = Options(connection='local', module_path='/path/to/mymodules', forks=100, become=None, become_method='sudo',
+playoptions = Options(connection='local', module_path='/path/to/mymodules', forks=100, become=None, become_method='sudo',
                   become_user=None, check=False)
 passwords = dict(vault_pass='secret')
 
 # Instantiate our ResultCallback for handling results as they come in
-results_callback = ResultCallback(path.join(instance_path, 'install.log.json'))
+results_callback = ResultCallback(path.join(instance_path, 'ansible.log.json'))
 
 # create inventory and pass to var manager
 inventory = Inventory(loader=loader, variable_manager=variable_manager, host_list='localhost')
@@ -143,7 +152,7 @@ play_source = dict(
     #     dict(action=dict(module='debug', args=dict(msg='{{shell_out.stdout}}')))
     # ]
     roles=[
-        dict(name="openslides-add-instance", register='shell_out'),
+        dict(name=options.ansible_role, register='shell_out'),
     ]
 )
 play = Play().load(play_source, variable_manager=variable_manager, loader=loader)
@@ -156,7 +165,7 @@ try:
         inventory=inventory,
         variable_manager=variable_manager,
         loader=loader,
-        options=options,
+        options=playoptions,
         passwords=passwords,
         stdout_callback=results_callback,  # Use our custom callback instead of the ``default`` callback plugin
     )

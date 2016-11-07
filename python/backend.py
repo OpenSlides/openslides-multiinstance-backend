@@ -1,20 +1,18 @@
-import copy
-import json
 import os
 import random
 import string
+import subprocess
 import uuid
 from datetime import datetime
 from optparse import OptionParser
 from subprocess import Popen
 
-import subprocess
 from flask import Flask
-from multiinstance.listing import InstanceListing, VersionListing
-from multiinstance.models import Instance, OsVersion
 
 import jsonapi.flask
 from jsonapi.base.schema import Schema
+from multiinstance.listing import InstanceListing, VersionListing
+from multiinstance.models import Instance, OsVersion
 from python.multiinstance.listing import DomainListing
 from python.multiinstance.models import OsDomain
 from python.multiinstance.utils import generate_username
@@ -63,52 +61,72 @@ class Session(jsonapi.base.database.Session):
         pass
 
     def delete(self, resources):
-        pass
+        for resource in resources:
+            if isinstance(resource, Instance):
+                cmd = self.build_play_command(resource.get_instance_filename(instance_meta_dir),
+                                              'openslides-remove-instance')
+                print(" ".join(cmd))
+                self.fork(cmd)
 
     def save(self, resources):
         for resource in resources:
             if isinstance(resource, Instance):
-                now = datetime.now()
-                instance_id = uuid.uuid4().__str__()
-                journal_file = os.path.join(instance_meta_dir, "openslides_instance.journal")
-                if os.path.isfile(journal_file):
-                    with open(journal_file, 'rb') as fh:
-                        lines = fh.readlines()
-                        if len(lines) == 0:
-                            last_number = 0
-                        else:
-                            last = lines[-1].decode()
-                            last_number = int(last.split(';')[0])
+                if 'id' in resource.data:
+                    self.saveInstance(resource)
                 else:
+                    self.createInstance(resource)
+
+    def createInstance(self, resource):
+        now = datetime.now()
+        instance_id = uuid.uuid4().__str__()
+        journal_file = os.path.join(instance_meta_dir, "openslides_instance.journal")
+        if os.path.isfile(journal_file):
+            with open(journal_file, 'rb') as fh:
+                lines = fh.readlines()
+                if len(lines) == 0:
                     last_number = 0
+                else:
+                    last = lines[-1].decode()
+                    last_number = int(last.split(';')[0])
+        else:
+            last_number = 0
+        number = last_number + 1
+        with open(journal_file, 'a') as fh:
+            fh.write(str(number) + ';' + instance_id + "\n")
+        resource.data['id'] = instance_id
+        resource.data['number'] = number
+        resource.data['superadmin_password'] = randompassword()
+        resource.data['admin_initial_password'] = randompassword()
+        resource.data['admin_username'] = generate_username(resource.data['admin_first_name'],
+                                                            resource.data['admin_last_name'])
+        resource.data['created_date'] = now.strftime('%Y-%m-%d')
+        instance_filename = resource.get_instance_filename(instance_meta_dir)
+        cmd = self.build_play_command(instance_filename, 'openslides-add-instance')
+        resource.data['install_cmd'] = ' '.join(cmd)
+        resource.save(instance_meta_dir)
+        self.fork(cmd)
 
-                number = last_number + 1
-                with open(journal_file, 'a') as fh:
-                    fh.write(str(number) + ';' + instance_id + "\n")
+    def fork(self, cmd):
+        print(" ".join(cmd))
+        Popen(['nohup'] + cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-                resource.data['id'] = instance_id
-                instance_filename = os.path.join(instance_meta_dir, "openslides_instance_" + instance_id + '.json')
-                f = open(instance_filename, "w")
-                data = copy.copy(resource.data)
-                data['image'] = data['osversion'].data['image']
-                data['osversion'] = data['osversion'].data['id']
-                data['number'] = number
-                data['superadmin_password'] = randompassword()
-                data['admin_initial_password'] = randompassword()
-                data['admin_username'] = generate_username(data['admin_first_name'], data['admin_last_name'])
-                data['created_date'] = now.strftime('%Y-%m-%d')
-                playscript = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'play.py')
-                cmd = [options.python_ansible, playscript, '--instances-dir', options.instances_dir,
-                             '--sudo-password', options.sudo_password, '--instance-file', instance_filename]
-                data['install_cmd'] = ' '.join(cmd)
-                f.write(json.dumps(data, indent=4))
-                f.close()
-                Popen(['nohup'] + cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    def build_play_command(self, instance_filename, role):
+        playscript = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'play.py')
+
+        cmd = [options.python_ansible, playscript, '--instances-dir', options.instances_dir,
+               '--role', role,
+               '--sudo-password', options.sudo_password, '--instance-file', instance_filename]
+        return cmd
 
     def get(self, identifier, required=False):
         if identifier[0] == 'osversions':
             return self.versions.get_by_id(identifier[1])
+        if identifier[0] == 'instances':
+            return self.findInstance(identifier[1])
         pass
+
+    def findInstance(self, id):
+        return self.instances.get_by_id(id)
 
     def query(self, typename, *, sorting=None, limit=None, offset=None, filters=None, order=None):
         if typename == 'instances':
@@ -122,6 +140,22 @@ class Session(jsonapi.base.database.Session):
     def get_many(self, identifiers, required=False):
         objs = [self.get(identifier, required) for identifier in identifiers]
         return dict([((obj.type, obj.data['id']), obj) for obj in objs if obj is not None])
+
+    def saveInstance(self, resource):
+        old_instance = self.findInstance(resource.data['id'])
+        # only the instance state can be changed
+        old_state = old_instance.data['state']
+        new_state = resource.data['state']
+
+        if new_state == 'stopped':
+            instance_filename = resource.get_instance_filename(instance_meta_dir)
+            cmd = self.build_play_command(instance_filename, 'openslides-stop-instance')
+            self.fork(cmd)
+
+        if new_state == 'active':
+            instance_filename = resource.get_instance_filename(instance_meta_dir)
+            cmd = self.build_play_command(instance_filename, 'openslides-start-instance')
+            self.fork(cmd)
 
 
 app = Flask(__name__)
