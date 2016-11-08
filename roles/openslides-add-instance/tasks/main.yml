@@ -26,8 +26,18 @@
 - name: Create instance container
   include: create_container.yml
 
-- name: Create systemd units
+- name: Create and start systemd units
   include: create_units.yml
+
+- wait_for: path={{ openslides_instance_path }}/rkt-uuid
+
+- pause: seconds=5
+
+# setup manage command
+- shell: cat {{ openslides_instance_path }}/rkt-uuid
+  register: rkt_uuid
+- set_fact:
+    openslides_rkt_manage: /usr/bin/rkt enter {{ rkt_uuid.stdout }} /app/manage.py
 
 - name: Initialize database
   include: init_instance_database.yml
@@ -40,3 +50,5 @@
   when: static_path.stat.exists == False
   sudo_user: root
   command: '{{ openslides_rkt_manage }} collectstatic --noinput'
+
+- include: recreate_units.yml

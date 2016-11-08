@@ -1,19 +1,19 @@
 ---
-- name: Start and enalbe openslides
+- name: Stop openslides proxy service
   sudo: yes
   sudo_user: root
   service:
     name: 'openslides_instance_proxy_{{ openslides_instance_id }}.service'
     enabled: no
-    state: loaded
+    state: stopped
 
-- name: Start and enalbe nginx via socket activation
+- name: Deactivate openslides proxy socket
   sudo: yes
   sudo_user: root
   service:
     name: 'openslides_instance_proxy_{{ openslides_instance_id }}.socket'
     enabled: no
-    state: loaded
+    state: stopped
 
 - name: Create 502.html
   template:

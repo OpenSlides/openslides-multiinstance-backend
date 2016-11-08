@@ -68,11 +68,13 @@ class InstanceListing:
     def set_instance_state(self, instance, state_map):
         if instance.data['id'] in state_map:
             state = state_map[instance.data['id']]
-            socket_state = state['proxy_socket']['state']
-            proxy_service_state = state['proxy_service']['state']
+            socket_state = state['proxy_socket']['state'] if 'proxy_socket' in state else 'stopped'
+            proxy_service_state = state['proxy_service']['state'] if 'proxy_socket' in state else 'stopped'
             service_state = state['service']['state']
             if service_state == 'active':
                 instance.data['state'] = 'active'
+            elif service_state == 'failed':
+                instance.data['state'] = 'error'
             elif proxy_service_state == 'active':
                 instance.data['state'] = 'starting'
             elif socket_state == 'active':

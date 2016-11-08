@@ -23,10 +23,9 @@
     dest: "{{ openslides_instance_path }}/502.html"
     src: 502.html.j2
 
-- name: Prepare rkt pod for instance
-  sudo: yes
-  sudo_user: root
-  command: /usr/bin/rkt prepare
+- set_fact:
+    openslides_rkt_base: /usr/bin/rkt run
+      --uuid-file-save={{ openslides_instance_path }}/rkt-uuid
       --port=8000-tcp:{{ openslides_instance_port }}
       --set-env=PYTHONPATH=/data:/app
       --volume volume-data,kind=host,source={{ openslides_instance_path }},readOnly=false
@@ -34,19 +33,4 @@
       --user={{ openslides_uid }}
       --group={{ openslides_gid }}
       --exec supervisord -- -c /supervisord.conf
-  register: rkt_prepare
-
-- set_fact:
-    openslides_rkt_uuid: "{{ rkt_prepare.stdout }}"
-
-- name: Save pod UUID to file
-  template:
-    dest: '{{ openslides_instance_path }}//rkt-uuid'
-    src: "rkt-uuid.j2"
-
-- set_fact:
-    openslides_rkt_base: /usr/bin/rkt run-prepared {{ openslides_rkt_uuid }}
-
-- set_fact:
-    openslides_rkt_manage: /usr/bin/rkt enter {{ openslides_rkt_uuid }} /app/manage.py
 

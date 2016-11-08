@@ -35,6 +35,7 @@
   service:
     name: '{{ openslides_instance_service_name }}.service'
     enabled: yes
+    state: started
 
 - name: Start and enalbe openslides
   sudo: yes
@@ -52,4 +53,3 @@
     name: 'openslides_instance_proxy_{{ openslides_instance_id }}.socket'
     enabled: yes
     state: started
-
