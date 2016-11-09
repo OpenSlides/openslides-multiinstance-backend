@@ -110,6 +110,12 @@ MISC
 # sudo rkt gc --grace-period=0
 ```
 
+SSL TODOs
+=========
+
+- adjust roles/openslides-add-instance/templates/nginx_instance_subdomain.conf.j2
+
+
 Credits
 =======
 

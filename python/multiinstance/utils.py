@@ -1,5 +1,7 @@
 import json
 import os
+import random
+import string
 
 
 def get_json_data(directory, prefix):
@@ -35,3 +37,8 @@ def generate_username(first_name, last_name):
                              "empty.")
 
     return base_name
+
+
+def randompassword():
+    chars = string.ascii_uppercase + string.ascii_lowercase + string.digits
+    return ''.join(random.choice(chars) for x in range(10))

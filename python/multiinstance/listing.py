@@ -17,6 +17,9 @@ class DomainListing:
             domains.append(OsDomain(**domain_data))
         return domains
 
+    def get_by_id(self, identifier):
+        next(filter(lambda v: v.data['id'] == identifier, self.get()), None)
+
 
 class VersionListing:
     def __init__(self, directory):
@@ -34,11 +37,13 @@ class VersionListing:
 
 
 class InstanceListing:
-    def __init__(self, directory):
+    def __init__(self, directory, versions_listing, domains_listing):
         self.directory = directory
+        self.versions_listing = versions_listing
+        self.domains_listing = domains_listing
 
     def get_by_id(self, id):
-        instance_data = read_json_data(self.directory, 'openslides_instance_{}.json'.format(id))
+        instance_data = self.get_instance_data(read_json_data(self.directory, 'openslides_instance_{}.json'.format(id)))
         state_map = self.get_instance_state_map()
         instance = Instance(**instance_data)
         self.set_instance_state(instance, state_map)
@@ -49,11 +54,11 @@ class InstanceListing:
         state_map = self.get_instance_state_map()
 
         for instance_data in get_json_data(self.directory, 'openslides_instance_'):
+            instance_data = self.get_instance_data(instance_data)
             instance = Instance(**instance_data)
 
             self.set_instance_state(instance, state_map)
 
-            instance.data['osversion'] = VersionListing(self.directory).get_by_id(instance.osversion)
             try:
                 mode = instance.data['mode']
             except KeyError:
@@ -62,14 +67,19 @@ class InstanceListing:
                 instance.data['url'] = 'http://{}.{}/'.format(instance.data['slug'], instance.data['parent_domain'])
             else:
                 instance.data['url'] = 'http://openslides.de/' + instance.data['slug']
-            instances.append(instance)
+            if not instance.data['state'] == 'removed':
+                instances.append(instance)
         return instances
+
+    def get_instance_data(self, instance_data):
+        instance_data['osversion'] = self.versions_listing.get_by_id(instance_data['osversion'])
+        return instance_data
 
     def set_instance_state(self, instance, state_map):
         if instance.data['id'] in state_map:
             state = state_map[instance.data['id']]
             socket_state = state['proxy_socket']['state'] if 'proxy_socket' in state else 'stopped'
-            proxy_service_state = state['proxy_service']['state'] if 'proxy_socket' in state else 'stopped'
+            proxy_service_state = state['proxy_service']['state'] if 'proxy_service' in state else 'stopped'
             service_state = state['service']['state']
             if service_state == 'active':
                 instance.data['state'] = 'active'
@@ -80,7 +90,7 @@ class InstanceListing:
             elif socket_state == 'active':
                 instance.data['state'] = 'sleeping'
             else:
-                instance.data['state'] = 'error'
+                instance.data['state'] = 'removed'
         else:
             instance.data['state'] = 'installing'
 

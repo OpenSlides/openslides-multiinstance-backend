@@ -46,9 +46,11 @@
   register: static_path
 
 - name: Collect static
-  sudo: yes
   when: static_path.stat.exists == False
-  sudo_user: root
   command: '{{ openslides_rkt_manage }} collectstatic --noinput'
+
+- name: Copy projector logo file
+  when: '{{ openslides_instance_projector_logo }}'
+  copy: src={{ upload_dir }}/{{ openslides_instance_projector_logo }} dest={{ openslides_instance_path }}/static/img/logo-projector.png
 
 - include: recreate_units.yml

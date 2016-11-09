@@ -3,6 +3,6 @@ Requires={{ openslides_instance_service_name }}.service
 After={{ openslides_instance_service_name }}.service
 
 [Service]
-ExecStart=/lib/systemd/systemd-socket-proxyd localhost:{{ openslides_instance_port }}
+ExecStart=/lib/systemd/systemd-socket-proxyd 127.0.0.1:{{ openslides_instance_port }}
 # PrivateTmp=yes
 # PrivateNetwork=yes

@@ -85,7 +85,15 @@ parser.add_option("-d", "--instances-dir", dest="instances_dir",
 parser.add_option("-p", "--sudo-password", dest="sudo_password",
                   help="[REQUIRED] sudo password required to sudo in ansible script", metavar="SUDO_PASSWORD")
 parser.add_option("-r", "--role", dest="ansible_role",
-                  help="[REQUIRED] ansible role to execute (openslides-add-instance, openslides-remove-instance, openslides-stop-instance)", metavar="ANSIBLE_ROLE")
+                  help="[REQUIRED] ansible role to execute (openslides-add-instance, openslides-remove-instance, openslides-stop-instance)",
+                  metavar="ANSIBLE_ROLE")
+parser.add_option("-u", "--multiinstance-url", dest="multiinstance_url",
+                  help="[REQUIRED] URL of the multiinstance api (https://instances.openslides.de/api)",
+                  metavar="MULTIINSTANCE_URL")
+parser.add_option("-l", "--upload-dir", dest="upload_dir",
+                  help="[REQUIRED] directory for uploads",
+                  metavar="MULTIINSTANCE_URL")
+
 
 (options, args) = parser.parse_args()
 
@@ -112,16 +120,22 @@ variables = {
     'postgres_password': 'asdf'
 }
 
+variables['upload_dir'] = options.upload_dir
+variables['openslides_instance_file'] = instance_file
+variables['openslides_multiinstance_api_url'] = options.multiinstance_url
+
 for instance_var in instance_data.keys():
     variables['openslides_instance_' + instance_var] = instance_data[instance_var]
 
 # check if instance if already created
 instance_path = path.join(options.instances_dir, variables['openslides_instance_id'])
 
-is_add = options.ansible_role == 'openslides-add-instance'
+role = options.ansible_role
+is_add = role == 'openslides-add-instance'
 if path.exists(instance_path) and is_add and not options.force:
     raise Exception("instance already created")
 
+# TODO: move to role
 if is_add:
     os.makedirs(instance_path)
 
@@ -131,8 +145,9 @@ for key, value in variables.items():
     variable_manager.set_host_variable(Host(name='localhost'), key, value)
 
 loader = DataLoader()
-playoptions = Options(connection='local', module_path='/path/to/mymodules', forks=100, become=None, become_method='sudo',
-                  become_user=None, check=False)
+playoptions = Options(connection='local', module_path='/path/to/mymodules', forks=100, become=None,
+                      become_method='sudo',
+                      become_user=None, check=False)
 passwords = dict(vault_pass='secret')
 
 # Instantiate our ResultCallback for handling results as they come in
@@ -152,7 +167,7 @@ play_source = dict(
     #     dict(action=dict(module='debug', args=dict(msg='{{shell_out.stdout}}')))
     # ]
     roles=[
-        dict(name=options.ansible_role, register='shell_out'),
+        dict(name=role, register='shell_out'),
     ]
 )
 play = Play().load(play_source, variable_manager=variable_manager, loader=loader)

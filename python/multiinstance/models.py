@@ -53,6 +53,8 @@ class Instance(SimpleApiObject):
     event_location = ObjectAttribute("event_location")
     event_organizer = ObjectAttribute("event_organizer")
 
+    projector_logo = ObjectAttribute("projector_logo")
+
     state = ObjectAttribute("state")
 
     def save(self, directory):

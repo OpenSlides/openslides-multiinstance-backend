@@ -11,8 +11,12 @@ server {
         alias {{ openslides_instance_path }}/static;
     }
 
+    location = /static/img/logo-projector.png {
+        {{ openslides_multiinstance_api_url }}/instancelogo/{{ openslides_instance_id }}
+    }
+
     location = /502.html {
-        alias {{openslides_instance_path }}/502.html;
+        alias {{ openslides_instance_path }}/502.html;
     }
 
     location / {
