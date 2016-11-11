@@ -34,7 +34,7 @@ class Session(jsonapi.base.database.Session):
     def delete(self, resources):
         for resource in resources:
             if isinstance(resource, Instance):
-                cmd = self.build_play_command(resource.get_instance_filename(instance_meta_dir),
+                cmd = self.build_play_command(resource.get_instance_filename(self.instance_meta_dir),
                                               'openslides-remove-instance')
                 print(" ".join(cmd))
                 call(cmd)

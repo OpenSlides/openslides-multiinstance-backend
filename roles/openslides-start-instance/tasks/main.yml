@@ -1,13 +1,26 @@
 ---
-- name: Remove rkt pod
-  become: yes
-  become_user: root
-  command: /usr/bin/rkt rm --uuid-file={{ openslides_instance_path }}/rkt-uuid
+- name: Start openslides service
+  sudo: yes
+  sudo_user: root
+  service:
+    name: 'openslides_instance_{{ openslides_instance_id }}.service'
+    enabled: yes
 
-- name: Remove instance directory
-  become: yes
-  become_user: openslides
-  file: path={{ openslides_instance_path }} state=absent recurse=yes
+- name: Deactivate openslides proxy service
+  sudo: yes
+  sudo_user: root
+  service:
+    name: 'openslides_instance_proxy_{{ openslides_instance_id }}.service'
+    enabled: yes
+    state: stopped
+
+- name: Deactivate openslides proxy socket
+  sudo: yes
+  sudo_user: root
+  service:
+    name: 'openslides_instance_proxy_{{ openslides_instance_id }}.socket'
+    enabled: yes
+    state: started
 
 - name: Create 502.html
   template:
