@@ -1,3 +1,4 @@
+import os
 import re
 from collections import defaultdict
 
@@ -49,6 +50,9 @@ class InstanceListing:
         self.set_instance_state(instance, state_map)
         return instance
 
+    def instance_installing(self, id):
+        return not os.path.exists(os.path.join(self.directory, id, 'installed'))
+
     def get(self):
         instances = []
         state_map = self.get_instance_state_map()
@@ -76,8 +80,13 @@ class InstanceListing:
         return instance_data
 
     def set_instance_state(self, instance, state_map):
-        if instance.data['id'] in state_map:
-            state = state_map[instance.data['id']]
+        instance_id = instance.data['id']
+        installing = self.instance_installing(instance_id)
+        if installing:
+            instance.data['state'] = 'installing'
+
+        if instance_id in state_map:
+            state = state_map[instance_id]
             socket_state = state['proxy_socket']['state'] if 'proxy_socket' in state else 'stopped'
             proxy_service_state = state['proxy_service']['state'] if 'proxy_service' in state else 'stopped'
             service_state = state['service']['state']
@@ -92,7 +101,7 @@ class InstanceListing:
             else:
                 instance.data['state'] = 'removed'
         else:
-            instance.data['state'] = 'installing'
+            instance.data['state'] = 'stopped'
 
     def get_instance_state_map(self):
         unit_states = Systemd().get_instance_unit_states()
