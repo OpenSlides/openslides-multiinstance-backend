@@ -3,7 +3,7 @@
     {
       "type": "instances",
       "attributes": {
-          "slug": "konferenz",
+          "slug": "konferenz12",
 	  "db": "postgresql",
 	  "mode": "subdomain",
           "parent_domain": "local",

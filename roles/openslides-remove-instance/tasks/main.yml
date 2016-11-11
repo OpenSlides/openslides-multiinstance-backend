@@ -1,0 +1,8 @@
+---
+- include: remove_units.yml
+
+- name: Remove instance directory
+  file: path={{ openslides_instance_path }} state=absent recurse=yes
+
+- name: Remove instance file
+  file: path={{ openslides_instance_file }} state=absent recurse=yes

@@ -1,13 +1,10 @@
 ---
-#- TODO: run migration
-#- TODO: add admin user
-
 - name: Ensure the PostgreSQL service is running
   service: name=postgresql state=started enabled=yes
 
 - name: Ensure database is created
   sudo_user: postgres
-  postgresql_db: name=openslides_{{ openslides_instance_slug }}
+  postgresql_db: name=openslides_{{ openslides_instance_id }}
                  encoding='UTF-8'
                  lc_collate='en_US.UTF-8'
                  lc_ctype='en_US.UTF-8'
@@ -19,8 +16,8 @@
 
 - name: Ensure user has access to the database
   sudo_user: postgres
-  postgresql_user: db=openslides_{{ openslides_instance_slug }}
-                   name=openslides_{{ openslides_instance_slug }}
+  postgresql_user: db=openslides_{{ openslides_instance_id }}
+                   name=openslides_{{ openslides_instance_id }}
                    password={{ openslides_instance_db_password }}
                    login_host={{ postgres_host }}
                    login_user={{ postgres_user }}
@@ -28,7 +25,21 @@
                    priv=ALL
                    state=present
 
-- name: Migrate static
+- name: restart postgresql to make sure it bind to veth ip
+  sudo: yes
+  sudo_user: root
+  service:
+    name: postgresql
+    state: restarted
+
+- name: restart redis to make sure it bind to veth ip
+  sudo: yes
+  sudo_user: root
+  service:
+    name: redis
+    state: restarted
+
+- name: Migrate database
   sudo: yes
   sudo_user: root
   command: '{{ openslides_rkt_manage }} migrate --noinput'
@@ -36,12 +47,17 @@
 - name: Change admin password
   sudo: yes
   sudo_user: root
-  command: '{{ openslides_rkt_manage }} insecurechangepassword admin {{ openslides_instance_admin_initial_password }}'
+  command: '{{ openslides_rkt_manage }} insecurechangepassword admin {{ openslides_instance_superadmin_password }}'
+
+- name: Create local admin user
+  sudo: yes
+  sudo_user: root
+  command: '{{ openslides_rkt_manage }} createopenslidesuser "{{ openslides_instance_admin_first_name }}" "{{ openslides_instance_admin_last_name }}" "{{ openslides_instance_admin_username }}" "{{ openslides_instance_admin_initial_password }}"'
 
 - name: Set instance configuration
   sudo: yes
   sudo_user: root
-  command: "{{ openslides_rkt_manage }} changeconfig {{ item.key }} {{ item.value }} --settings settings"
+  command: "{{ openslides_rkt_manage }} changeconfig '{{ item.key }}' '{{ item.value }}' --settings settings"
   with_items:
       - { key: 'general_event_name', value: '{{ openslides_instance_event_name }}' }
       - { key: 'general_event_description', value: '{{ openslides_instance_event_description }}' }

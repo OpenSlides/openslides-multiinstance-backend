@@ -1,0 +1,17 @@
+---
+# save pod manifeste
+- name: Get POD manifest for starting later
+  sudo: yes
+  sudo_user: root
+  command: /usr/bin/rkt cat-manifest {{ rkt_uuid.stdout }}
+  register: rkt_manifest
+- copy:
+    content: "{{ rkt_manifest.stdout }}"
+    dest: '{{ openslides_instance_path }}/rkt-manifest'
+
+- set_fact:
+    openslides_rkt_base: /usr/bin/rkt run --pod-manifest={{ openslides_instance_path }}/rkt-manifest
+
+- name: Recreate systemd units
+  include: create_units.yml
+

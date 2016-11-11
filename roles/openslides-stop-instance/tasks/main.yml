@@ -1,0 +1,21 @@
+---
+- name: Stop openslides proxy service
+  sudo: yes
+  sudo_user: root
+  service:
+    name: 'openslides_instance_proxy_{{ openslides_instance_id }}.service'
+    enabled: no
+    state: stopped
+
+- name: Deactivate openslides proxy socket
+  sudo: yes
+  sudo_user: root
+  service:
+    name: 'openslides_instance_proxy_{{ openslides_instance_id }}.socket'
+    enabled: no
+    state: stopped
+
+- name: Create 502.html
+  template:
+    dest: "{{ openslides_instance_path }}/502.html"
+    src: 502.html.j2

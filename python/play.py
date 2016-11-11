@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import json
+import os
 import random
 import re
 import string
@@ -17,22 +18,49 @@ from ansible.playbook.play import Play
 from ansible.plugins.callback import CallbackBase
 from ansible.vars import VariableManager
 
+from multiinstance.utils import read_json_data
+
+
+def random_string(length):
+    return ''.join(
+        [random.SystemRandom().choice("{}{}".format(string.ascii_letters, string.digits)) for i in range(length)])
+
+
+def checkRequiredArguments(opts, parser):
+    missing_options = []
+    for opt in parser.option_list:
+        if re.match(r'^\[REQUIRED\]', opt.help) and eval('opts.' + opt.dest) == None:
+            missing_options.extend(opt._long_opts)
+    if len(missing_options) > 0:
+        parser.error('Missing REQUIRED parameters: ' + str(missing_options))
+
+
 C.DEFAULT_ROLES_PATH = [path.join(path.dirname(path.abspath(__file__)), '../roles')]
 
 
 class ResultCallback(CallbackBase):
-    """A sample callback plugin used for performing an action as results come in
-
-    If you want to collect all results into a single object for processing at
-    the end of the execution, look into utilizing the ``json`` callback plugin
-    or writing your own custom callback plugin
-    """
+    def __init__(self, logfile):
+        super(ResultCallback, self).__init__()
+        self.logfile = logfile
+        if path.exists(self.logfile):
+            self.logs = read_json_data(self.logfile)
+        else:
+            self.logs = []
 
     def v2_runner_item_on_failed(self, result):
         pass
 
+    def log(self, result):
+        logfile = open(self.logfile, "w")
+        log_entry = {result._host.get_name(): result._result}
+        self.logs.append(log_entry)
+        print(json.dumps(log_entry, indent=4))
+        logfile.write(json.dumps(self.logs, indent=4))
+        logfile.close()
+
     def v2_runner_on_failed(self, result, ignore_errors=False):
-        print(json.dumps({result._host.get_name(): result._result}, indent=4))
+        logfile = open(self.logfile, "a")
+        self.log(result)
         super(ResultCallback, self).v2_runner_on_failed(result, ignore_errors=ignore_errors)
 
     def v2_runner_on_async_failed(self, result):
@@ -44,7 +72,7 @@ class ResultCallback(CallbackBase):
         This method could store the result in an instance attribute for retrieval later
         """
         host = result._host
-        print(json.dumps({host.name: result._result}, indent=4))
+        self.log(result)
 
 
 parser = OptionParser()
@@ -56,16 +84,18 @@ parser.add_option("-d", "--instances-dir", dest="instances_dir",
                   help="[REQUIRED] directory containing instance data", metavar="INSTANCES_DIR")
 parser.add_option("-p", "--sudo-password", dest="sudo_password",
                   help="[REQUIRED] sudo password required to sudo in ansible script", metavar="SUDO_PASSWORD")
+parser.add_option("-r", "--role", dest="ansible_role",
+                  help="[REQUIRED] ansible role to execute (openslides-add-instance, openslides-remove-instance, openslides-stop-instance)",
+                  metavar="ANSIBLE_ROLE")
+parser.add_option("-u", "--multiinstance-url", dest="multiinstance_url",
+                  help="[REQUIRED] URL of the multiinstance api (https://instances.openslides.de/api)",
+                  metavar="MULTIINSTANCE_URL")
+parser.add_option("-l", "--upload-dir", dest="upload_dir",
+                  help="[REQUIRED] directory for uploads",
+                  metavar="MULTIINSTANCE_URL")
+
 
 (options, args) = parser.parse_args()
-
-def checkRequiredArguments(opts, parser):
-    missing_options = []
-    for opt in parser.option_list:
-        if re.match(r'^\[REQUIRED\]', opt.help) and eval('opts.' + opt.dest) == None:
-            missing_options.extend(opt._long_opts)
-    if len(missing_options) > 0:
-        parser.error('Missing REQUIRED parameters: ' + str(missing_options))
 
 checkRequiredArguments(options, parser)
 
@@ -79,40 +109,35 @@ Options = namedtuple('Options',
 # initialize needed objects
 variable_manager = VariableManager()
 
-
-def random_string(length):
-    return ''.join(
-        [random.SystemRandom().choice("{}{}".format(string.ascii_letters, string.digits)) for i in range(length)])
-
-
 instance_number = instance_data['number']
 variables = {
-    'openslides_static_path': '/home/ab/git/OpenSlides/collected-static',
     'openslides_secure_key': random_string(50),
     'openslides_instance_db_password': random_string(12),
     'openslides_instance_systemd_port': str(23232 + instance_number * 2),
     'openslides_instance_port': str(23232 + (instance_number * 2 + 1)),
     'postgres_host': 'localhost',
     'postgres_user': 'openslides_admin',
-    'postgres_password': 'asdf',
-    # 'openslides_instance_id': 'asdf',
-    # 'openslides_instance_event_name': 'asdf',
-    # 'openslides_instance_event_description': 'asdf',
-    # 'openslides_instance_event_date': 'asdf',
-    # 'openslides_instance_event_location': 'asdf',
-    # 'openslides_instance_event_organizer': 'asdf',
-    # 'openslides_instance_slug': 'asdf',
-    'ansible_become_pass': options.sudo_password
+    'postgres_password': 'asdf'
 }
+
+variables['upload_dir'] = options.upload_dir
+variables['openslides_instance_file'] = instance_file
+variables['openslides_multiinstance_api_url'] = options.multiinstance_url
 
 for instance_var in instance_data.keys():
     variables['openslides_instance_' + instance_var] = instance_data[instance_var]
 
 # check if instance if already created
-instance_path = path.join(options.instances_dir, variables['openslides_instance_slug'])
+instance_path = path.join(options.instances_dir, variables['openslides_instance_id'])
 
-if path.exists(instance_path) and not options.force:
+role = options.ansible_role
+is_add = role == 'openslides-add-instance'
+if path.exists(instance_path) and is_add and not options.force:
     raise Exception("instance already created")
+
+# TODO: move to role
+if is_add:
+    os.makedirs(instance_path)
 
 variables['openslides_instance_path'] = instance_path
 
@@ -120,12 +145,13 @@ for key, value in variables.items():
     variable_manager.set_host_variable(Host(name='localhost'), key, value)
 
 loader = DataLoader()
-options = Options(connection='local', module_path='/path/to/mymodules', forks=100, become=None, become_method='sudo',
-                  become_user=None, check=False)
+playoptions = Options(connection='local', module_path='/path/to/mymodules', forks=100, become=None,
+                      become_method='sudo',
+                      become_user=None, check=False)
 passwords = dict(vault_pass='secret')
 
 # Instantiate our ResultCallback for handling results as they come in
-results_callback = ResultCallback()
+results_callback = ResultCallback(path.join(instance_path, 'ansible.log.json'))
 
 # create inventory and pass to var manager
 inventory = Inventory(loader=loader, variable_manager=variable_manager, host_list='localhost')
@@ -141,10 +167,11 @@ play_source = dict(
     #     dict(action=dict(module='debug', args=dict(msg='{{shell_out.stdout}}')))
     # ]
     roles=[
-        dict(name="openslides-add-instance", register='shell_out'),
+        dict(name=role, register='shell_out'),
     ]
 )
 play = Play().load(play_source, variable_manager=variable_manager, loader=loader)
+print(instance_file)
 
 # actually run it
 tqm = None
@@ -153,7 +180,7 @@ try:
         inventory=inventory,
         variable_manager=variable_manager,
         loader=loader,
-        options=options,
+        options=playoptions,
         passwords=passwords,
         stdout_callback=results_callback,  # Use our custom callback instead of the ``default`` callback plugin
     )

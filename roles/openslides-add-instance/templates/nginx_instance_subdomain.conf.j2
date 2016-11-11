@@ -11,9 +11,14 @@ server {
         alias {{ openslides_instance_path }}/static;
     }
 
+    location = /502.html {
+        alias {{ openslides_instance_path }}/502.html;
+    }
+
     location / {
         proxy_pass http://localhost:{{ openslides_instance_systemd_port }};
         proxy_http_version 1.1;
+        error_page 502 /502.html;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
         proxy_set_header Host $http_host;
