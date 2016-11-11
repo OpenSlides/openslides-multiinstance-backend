@@ -82,7 +82,7 @@ class Session(jsonapi.base.database.Session):
         Popen(['nohup'] + cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     def build_play_command(self, instance_filename, role):
-        playscript = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'play.py')
+        playscript = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'play.py')
 
         cmd = [self.python_ansible, playscript, '--instances-dir', self.instances_dir,
                '--role', role,

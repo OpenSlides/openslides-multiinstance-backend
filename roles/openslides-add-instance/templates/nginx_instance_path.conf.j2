@@ -22,6 +22,3 @@ location /{{ openslides_instance_slug }}/static {
     alias {{ openslides_instance_path }}/static;
 }
 
-location = /{{ openslides_instance_slug }}/static/img/logo-projector.png {
-    {{ openslides_multiinstance_api_url }}/instancelogo/{{ openslides_instance_id }}
-}
