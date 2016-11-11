@@ -30,7 +30,7 @@
 
 - wait_for: path={{ openslides_instance_path }}/rkt-uuid
 
-- pause: seconds=5
+- pause: seconds=15
 
 # setup manage command
 - shell: cat {{ openslides_instance_path }}/rkt-uuid
