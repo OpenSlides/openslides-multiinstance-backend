@@ -1,5 +1,13 @@
 ---
-- name: Stop openslides proxy service
+- name: Deactivate openslides proxy socket
+  sudo: yes
+  sudo_user: root
+  service:
+    name: 'openslides_instance_proxy_{{ openslides_instance_id }}.socket'
+    enabled: no
+    state: stopped
+
+- name: Deactivate openslides proxy service
   sudo: yes
   sudo_user: root
   service:
@@ -7,11 +15,11 @@
     enabled: no
     state: stopped
 
-- name: Deactivate openslides proxy socket
+- name: Stop openslides service
   sudo: yes
   sudo_user: root
   service:
-    name: 'openslides_instance_proxy_{{ openslides_instance_id }}.socket'
+    name: 'openslides_instance_{{ openslides_instance_id }}.service'
     enabled: no
     state: stopped
 

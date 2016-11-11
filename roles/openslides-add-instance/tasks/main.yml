@@ -60,3 +60,7 @@
   copy: src={{ upload_dir }}/{{ openslides_instance_projector_logo }} dest={{ openslides_instance_path }}/static/img/logo-projector.png
 
 - include: recreate_units.yml
+
+- name: mark instance installed
+  file: path={{ openslides_instance_path }}/installed state=touch
+
