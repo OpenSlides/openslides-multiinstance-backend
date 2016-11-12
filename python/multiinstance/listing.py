@@ -84,6 +84,7 @@ class InstanceListing:
         installing = self.instance_installing(instance_id)
         if installing:
             instance.data['state'] = 'installing'
+            return
 
         if instance_id in state_map:
             state = state_map[instance_id]

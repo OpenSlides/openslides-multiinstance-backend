@@ -49,7 +49,7 @@ class Session(jsonapi.base.database.Session):
 
     def create_instance(self, resource):
         now = datetime.now()
-        instance_id = uuid.uuid4().__str__()
+        instance_id = uuid.uuid4().__str__().replace('-', '')
         journal_file = os.path.join(self.instance_meta_dir, "openslides_instance.journal")
         if os.path.isfile(journal_file):
             with open(journal_file, 'rb') as fh:
@@ -92,6 +92,7 @@ class Session(jsonapi.base.database.Session):
         return cmd
 
     def get(self, identifier, required=False):
+        print("GETTING {} -> {}".format(*identifier))
         if identifier[0] == 'osversions':
             return self.versions.get_by_id(identifier[1])
         if identifier[0] == 'osdomains':
