@@ -90,7 +90,7 @@ Fix installation if necessary:
             listen 80;
             listen [::]:80;
 
-            server_name openslides.domain.org;
+            server_name openslides.example.com;
 
             include /etc/nginx/openslides/*.locations;
 
@@ -150,20 +150,21 @@ Take note of the SHA512 sum, e.g., `sha512-6a229c6187cb6168eaac1d11ce85b14c`.
 
 Create the following two files.  Add the above checksum.
 
-`/srv/openslides/versions/openslides_version_2_1.json`:
+`/srv/openslides/versions/openslides_versions.json`:
 
-    {
-      "id": "2.1",
-      "image": "sha512-<<HASH RETURNED BY rkt>>",
-      "default": true
-    }
+    [
+      {
+          "id": "2.1-master (20170106)",
+          "image": "sha512-<<HASH RETURNED BY rkt>>",
+      }
+    ]
 
 `/srv/openslides/versions/domains.json`:
 
     [
       {
           "id" : "1",
-          "domain" : "instances.openslides.de"
+          "domain" : "openslides.example.com"
       }
     ]
 

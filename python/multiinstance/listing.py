@@ -28,7 +28,7 @@ class VersionListing:
 
     def get(self):
         versions = []
-        for version_data in get_json_data(self.directory, 'openslides_version_'):
+        for version_data in read_json_data(self.directory, 'openslides_versions.json'):
             versions.append(OsVersion(**version_data))
 
         return versions
