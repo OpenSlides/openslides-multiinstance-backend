@@ -111,9 +111,61 @@ Fix installation if necessary:
 
     }
 
+
+`/etc/nginx/sites-available/openslides-ssl`:
+
+    # OpenSlides multi instance management interface
+
+    server {
+        listen 80;
+        listen [::]:80;
+        server_name openslides.example.com;
+
+        location / {
+            rewrite ^ https://$server_name$request_uri ;
+        }
+    }
+
+    server {
+        listen 443 ssl spdy;
+        listen [::]:443 ssl spdy;
+        server_name openslides.example.com;
+        client_max_body_size 100m;
+
+        ssl on;
+        ssl_protocols TLSv1.2 TLSv1.1 TLSv1;
+        ssl_ciphers EECDH+AESGCM:EDH+AESGCM:EECDH:EDH:!MD5:!RC4:!LOW:!MEDIUM:!CAMELLIA:!ECDSA:!DES:!DSS:!3DES:!NULL;
+        ssl_prefer_server_ciphers on;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload";
+        ssl_session_cache shared:SSL:10m;
+        ssl_session_timeout 10m;
+        ssl_certificate      /etc/ssl/certs/ssl-cert-snakeoil.pem;
+        ssl_certificate_key  /etc/ssl/private/ssl-cert-snakeoil.key;
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+
+        include /etc/nginx/openslides/*.locations;
+
+        location /api/ {
+            proxy_pass http://localhost:5000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto "https";
+        }
+        location / {
+            proxy_pass http://localhost:4200;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto "https";
+        }
+    }
+
+
 Enable the new Nginx config:
 
-    ln -s /etc/nginx/sites-available/openslides /etc/nginx/sites-enabled/openslides
+    ln -s /etc/nginx/sites-available/openslides-ssl /etc/nginx/sites-enabled/openslides-ssl
     rm -vi /etc/nginx/sites-enabled/default
 
 `/etc/nginx/nginx.conf`:
@@ -123,6 +175,34 @@ Enable the new Nginx config:
 Create directory for OpenSlides:
 
     mkdir -p /etc/nginx/openslides
+
+#### Configure HTTP Auth
+
+see also http://nginx.org/en/docs/http/ngx_http_auth_basic_module.html
+
+Install required Debian utils:
+
+    apt-get install apache2-utils
+
+Create account:
+
+    htpasswd -c /etc/nginx/conf.d/htpasswd admin
+
+`/etc/nginx/sites-available/openslides-ssl` :
+
+    location /api/ {
+            proxy_pass http://localhost:5000;
+
+            auth_basic           "closed site";
+            auth_basic_user_file conf.d/htpasswd;
+    }
+
+    location / {
+            proxy_pass http://localhost:4200;
+
+            auth_basic           "closed site";
+            auth_basic_user_file conf.d/htpasswd;
+    }
 
 #### Setup sudo
 
@@ -134,6 +214,7 @@ Grant sudo permissions:
 
     visudo
         openslides ALL=(ALL) NOPASSWD:ALL
+
 
 ### Set up the OpenSlides multi instance backend
 
