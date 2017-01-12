@@ -21,6 +21,7 @@ class OsVersion(SimpleApiObject):
     type = 'osversions'
     id = ObjectIDAttribute("id")
     image = ObjectAttribute("image")
+    name = ObjectAttribute("name")
     default = ObjectAttribute("default")
 
 
