@@ -1,7 +1,24 @@
-server {
-	listen 80;
+# OpenSlides multi-instance container configuration for
+# {{ openslides_instance_slug }}.{{ openslides_instance_parent_domain }}
 
-	server_name {{ openslides_instance_slug }}.{{ openslides_instance_parent_domain }};
+server {
+    listen 80;
+    listen [::]:80;
+    server_name {{ openslides_instance_slug }}.{{ openslides_instance_parent_domain }};
+
+    location / {
+        rewrite ^ https://$server_name$request_uri ;
+    }
+}
+
+server {
+    listen 443 ssl spdy;
+    listen [::]:443 ssl spdy;
+
+    server_name {{ openslides_instance_slug }}.{{ openslides_instance_parent_domain }};
+
+    ssl_certificate      /etc/ssl/private/openslides-container-cert.pem;
+    ssl_certificate_key  /etc/ssl/private/openslides-container-cert.key;
 
     location /media {
         alias {{openslides_instance_path}}/data/media;
