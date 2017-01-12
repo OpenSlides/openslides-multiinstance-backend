@@ -68,9 +68,9 @@ class InstanceListing:
             except KeyError:
                 mode = None
             if mode == 'subdomain':
-                instance.data['url'] = 'http://{}.{}/'.format(instance.data['slug'], instance.data['parent_domain'])
+                instance.data['url'] = 'https://{}.{}/'.format(instance.data['slug'], instance.data['parent_domain'])
             else:
-                instance.data['url'] = 'http://openslides.de/' + instance.data['slug']
+                instance.data['url'] = 'https://openslides.de/' + instance.data['slug']
             if not instance.data['state'] == 'removed':
                 instances.append(instance)
         return instances
