@@ -85,35 +85,6 @@ Fix installation if necessary:
 
 `/etc/nginx/sites-available/openslides`:
 
-    # Virtual Host configuration for OpenSlides
-    server {
-            listen 80;
-            listen [::]:80;
-
-            server_name openslides.example.com;
-
-            include /etc/nginx/openslides/*.locations;
-
-            # root /var/www/example.com;
-            # index index.html;
-
-            location /api/ {
-                    proxy_pass http://localhost:5000;
-
-                    #try_files $uri $uri/ =404;
-            }
-
-            location / {
-                    proxy_pass http://localhost:4200;
-
-                    #try_files $uri $uri/ =404;
-            }
-
-    }
-
-
-`/etc/nginx/sites-available/openslides-ssl`:
-
     # OpenSlides multi instance management interface
 
     server {
@@ -162,10 +133,14 @@ Fix installation if necessary:
         }
     }
 
+Modify the path of your ssl certificate (for `ssl_certificate` and `ssl_certificate_key`)
+ * nginx configuration of management interface: see `/etc/nginx/sites-available/openslides`
+ * generic nginx configuration of OpenSlides instances: see `openslides-multiinstance-backend/roles/openslides-add-instance/templates/nginx_instance_subdomain.conf.j2`
+
 
 Enable the new Nginx config:
 
-    ln -s /etc/nginx/sites-available/openslides-ssl /etc/nginx/sites-enabled/openslides-ssl
+    ln -s /etc/nginx/sites-available/openslides /etc/nginx/sites-enabled/openslides
     rm -vi /etc/nginx/sites-enabled/default
 
 `/etc/nginx/nginx.conf`:
@@ -188,7 +163,7 @@ Create account:
 
     htpasswd -c /etc/nginx/conf.d/htpasswd admin
 
-`/etc/nginx/sites-available/openslides-ssl` :
+`/etc/nginx/sites-available/openslides` :
 
     location /api/ {
             proxy_pass http://localhost:5000;

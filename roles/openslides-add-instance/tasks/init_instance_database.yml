@@ -52,7 +52,7 @@
 - name: Create local admin user
   sudo: yes
   sudo_user: root
-  command: '{{ openslides_rkt_manage }} createopenslidesuser "{{ openslides_instance_admin_first_name }}" "{{ openslides_instance_admin_last_name }}" "{{ openslides_instance_admin_username }}" "{{ openslides_instance_admin_initial_password }}"' 3
+  command: '{{ openslides_rkt_manage }} createopenslidesuser "{{ openslides_instance_admin_first_name }}" "{{ openslides_instance_admin_last_name }}" "{{ openslides_instance_admin_username }}" "{{ openslides_instance_admin_initial_password }}" 3'
 
 - name: Set instance configuration
   sudo: yes
