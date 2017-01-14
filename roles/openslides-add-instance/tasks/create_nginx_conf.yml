@@ -1,5 +1,5 @@
 ---
-- name: Create nginx vhost config
+- name: Create nginx location config
   when: "'{{ openslides_instance_mode }}' == 'path'"
   sudo: yes
   sudo_user: root
