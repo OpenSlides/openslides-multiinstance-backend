@@ -22,8 +22,6 @@ parser.add_option("-d", "--instances-dir", dest="instances_dir",
                   help="[REQUIRED] directory containing instance data", metavar="INSTANCES_DIR")
 parser.add_option("-a", "--python-ansible", dest="python_ansible",
                   help="[REQUIRED] python binary of ansible virtual environment", metavar="PYTHON_ANSIBLE")
-parser.add_option("-p", "--sudo-password", dest="sudo_password",
-                  help="[REQUIRED] sudo password required to sudo in ansible script", metavar="SUDO_PASSWORD")
 parser.add_option("-u", "--multiinstance-url", dest="multiinstance_url",
                   help="[REQUIRED] URL of the multiinstance api (https://instances.openslides.de/api)",
                   metavar="MULTIINSTANCE_URL")
@@ -46,7 +44,6 @@ class Database(jsonapi.base.database.Database):
                        versions_meta_dir=versions_meta_dir,
                        instances_dir=options.instances_dir,
                        python_ansible=options.python_ansible,
-                       sudo_password=options.sudo_password,
                        upload_dir=options.upload_dir)
 
 

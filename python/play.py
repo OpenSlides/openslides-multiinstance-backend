@@ -82,8 +82,6 @@ parser.add_option("-f", "--force", dest="force", action="store_true",
                   help="forces execution even if instance was created already", default=False)
 parser.add_option("-d", "--instances-dir", dest="instances_dir",
                   help="[REQUIRED] directory containing instance data", metavar="INSTANCES_DIR")
-parser.add_option("-p", "--sudo-password", dest="sudo_password",
-                  help="[REQUIRED] sudo password required to sudo in ansible script", metavar="SUDO_PASSWORD")
 parser.add_option("-r", "--role", dest="ansible_role",
                   help="[REQUIRED] ansible role to execute (openslides-add-instance, openslides-remove-instance, openslides-stop-instance)",
                   metavar="ANSIBLE_ROLE")
