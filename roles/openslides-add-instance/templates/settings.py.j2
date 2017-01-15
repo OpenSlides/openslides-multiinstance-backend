@@ -1,4 +1,7 @@
 from openslides.global_settings import *
+
+TIME_ZONE = 'Europe/Berlin'
+
 SECRET_KEY = '{{ openslides_secure_key }}'
 
 # TODO: fill in postgresql credentials
@@ -15,3 +18,18 @@ STATIC_ROOT = '/data/static/'
 CHANNEL_LAYERS['default']['BACKEND'] = 'asgi_redis.RedisChannelLayer'
 CHANNEL_LAYERS['default']['CONFIG']['prefix'] = '{{ openslides_instance_id }}'
 CHANNEL_LAYERS['default']['CONFIG']['hosts'] = [('172.16.28.1', 6379)]
+
+CACHES = {
+   "default": {
+       "BACKEND": "django_redis.cache.RedisCache",
+       "LOCATION": "redis://172.16.28.1:6379/0",
+       "OPTIONS": {
+           "CLIENT_CLASS": "django_redis.client.DefaultClient",
+       }
+   }
+}
+
+SESSION_ENGINE = 'redis_sessions.session'
+SESSION_REDIS_HOST = '172.16.28.1'
+SESSION_REDIS_PORT = 6379
+SESSION_REDIS_DB = 0

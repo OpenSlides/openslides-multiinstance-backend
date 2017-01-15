@@ -20,7 +20,6 @@ class Session(jsonapi.base.database.Session):
         self.versions_meta_dir = kwargs['versions_meta_dir']
         self.instances_dir = kwargs['instances_dir']
         self.python_ansible = kwargs['python_ansible']
-        self.sudo_password = kwargs['sudo_password']
         self.multiinstance_url = kwargs['multiinstance_url']
         self.instance_meta_dir = kwargs['instance_meta_dir']
         self.upload_dir = kwargs['upload_dir']
@@ -88,7 +87,7 @@ class Session(jsonapi.base.database.Session):
                '--role', role,
                '--multiinstance-url', self.multiinstance_url,
                '--upload-dir', self.upload_dir,
-               '--sudo-password', self.sudo_password, '--instance-file', instance_filename]
+               '--instance-file', instance_filename]
         return cmd
 
     def get(self, identifier, required=False):

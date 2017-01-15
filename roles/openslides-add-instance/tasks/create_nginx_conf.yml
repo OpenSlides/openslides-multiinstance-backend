@@ -1,5 +1,5 @@
 ---
-- name: Create nginx vhost config
+- name: Create nginx location config
   when: "'{{ openslides_instance_mode }}' == 'path'"
   sudo: yes
   sudo_user: root
@@ -7,6 +7,15 @@
     dest: "/etc/nginx/openslides/{{ item }}"
     src: nginx_instance_path.conf.j2
   with_items: "openslides_{{ openslides_instance_id }}.locations"
+
+- name: Create nginx vhost config
+  when: "'{{ openslides_instance_mode }}' == 'subdomain_nossl'"
+  sudo: yes
+  sudo_user: root
+  template:
+    dest: "/etc/nginx/openslides/{{ item }}"
+    src: nginx_instance_subdomain_nossl.conf.j2
+  with_items: "openslides_{{ openslides_instance_id }}.conf"
 
 - name: Create nginx vhost config
   when: "'{{ openslides_instance_mode }}' == 'subdomain'"
