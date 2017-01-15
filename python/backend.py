@@ -9,6 +9,10 @@ from multiinstance.models import Instance, OsVersion
 from multiinstance.models import OsDomain
 from multiinstance.session import Session
 from multiinstance.upload import add_routes
+from multiinstance.listing import DomainListing
+from multiinstance.models import OsDomain
+from multiinstance.utils import generate_username
+from backendutils import checkRequiredArguments
 
 parser = OptionParser()
 parser.add_option("-i", "--instance-meta-dir", dest="instance_meta_dir",
