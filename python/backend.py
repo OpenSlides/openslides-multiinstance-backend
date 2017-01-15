@@ -3,14 +3,12 @@ from optparse import OptionParser
 from flask import Flask
 
 import jsonapi.flask
+from backendutils import checkRequiredArguments
 from jsonapi.base.schema import Schema
-from multiinstance.models import Instance, OsVersion, OsDomain
+from multiinstance.models import Instance, OsVersion
+from multiinstance.models import OsDomain
 from multiinstance.session import Session
 from multiinstance.upload import add_routes
-from multiinstance.listing import DomainListing
-from multiinstance.models import OsDomain
-from multiinstance.utils import generate_username
-from backendutils import checkRequiredArguments
 
 parser = OptionParser()
 parser.add_option("-i", "--instance-meta-dir", dest="instance_meta_dir",
@@ -50,7 +48,53 @@ class Database(jsonapi.base.database.Database):
 UPLOAD_FOLDER = '/tmp'
 
 app = Flask(__name__)
+
+
+class ReverseProxied(object):
+    '''Wrap the application in this middleware and configure the
+    front-end server to add these headers, to let you quietly bind
+    this to a URL other than / and to an HTTP scheme that is
+    different than what is used locally.
+
+    In nginx:
+    location /myprefix {
+        proxy_pass http://192.168.0.1:5001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Scheme $scheme;
+        proxy_set_header X-Script-Name /myprefix;
+        }
+
+    :param app: the WSGI application
+    '''
+
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        print('WSGI REQUEST')
+        print(environ)
+        script_name = environ.get('HTTP_X_SCRIPT_NAME', '')
+        if script_name:
+            environ['SCRIPT_NAME'] = script_name
+            path_info = environ['PATH_INFO']
+            if path_info.startswith(script_name):
+                environ['PATH_INFO'] = path_info[len(script_name):]
+
+        scheme = environ.get('HTTP_X_FORWARDED_PROTO', '')
+        server = environ.get('HTTP_X_FORWARDED_SERVER', '')
+        if scheme:
+            environ['wsgi.url_scheme'] = scheme
+        if server:
+            environ['HTTP_HOST'] = server
+        return self.app(environ, start_response)
+
+app.wsgi_app = ReverseProxied(app.wsgi_app)
+
+application = app.wsgi_app
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['SECRET_KEY'] = 'adfndsfadsfnasdfdsaf'
 
 api = jsonapi.flask.FlaskAPI("/api", db=Database(), flask_app=app)
 
