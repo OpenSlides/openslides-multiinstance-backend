@@ -1,6 +1,4 @@
 ---
-- include: remove_units.yml
-
 - name: Remove instance directory
   sudo: yes
   sudo_user: root
@@ -10,3 +8,5 @@
   sudo: yes
   sudo_user: root
   file: path={{ openslides_instance_file }} state=absent
+
+- include: remove_units.yml
