@@ -243,9 +243,10 @@ from above:
     cd openslides-multiinstance-backend/python
     python3 backend.py --instance-meta-dir /srv/openslides/instances \
         --versions-meta-dir /srv/openslides/versions --instances-dir \
-        /srv/openslides/instances --sudo-password SUDOPASSWORD \
+        /srv/openslides/instances \
         --python-ansible /usr/bin/python --multiinstance-url \
         instances.openslides.de --upload-dir /tmp
+        --postgres-password <DBPASSWORD from Postgresql setup section>
 
 #### Manual queries to backend
 
@@ -275,10 +276,11 @@ from above:
     ExecStart=/usr/bin/python3 \
         /home/openslides/openslides-multiinstance-backend/python/backend.py \
         --instance-meta-dir /srv/openslides/instances \
-        --versions-meta-dir /srv/openslides/versions --instances-dir \
-        /srv/openslides/instances --sudo-password SUDOPASSWORD \
-        --python-ansible /usr/bin/python --multiinstance-url \
-        instances.openslides.de --upload-dir /tmp
+        --versions-meta-dir /srv/openslides/versions \
+        --instances-dir /srv/openslides/instances \
+        --python-ansible /usr/bin/python \
+        --multiinstance-url instances.openslides.de --upload-dir /tmp
+        --postgres-password <DBPASSWORD from Postgresql setup section>
     User=openslides
 
     [Install]
