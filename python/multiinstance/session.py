@@ -91,7 +91,6 @@ class Session(jsonapi.base.database.Session):
         return cmd
 
     def get(self, identifier, required=False):
-        print("GETTING {} -> {}".format(*identifier))
         if identifier[0] == 'osversions':
             return self.versions.get_by_id(identifier[1])
         if identifier[0] == 'osdomains':
