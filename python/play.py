@@ -80,6 +80,9 @@ parser.add_option("-i", "--instance-file", dest="instance_file",
                   help="[REQUIRED] instance file container instance data", metavar="INSTANCE_FILE")
 parser.add_option("-f", "--force", dest="force", action="store_true",
                   help="forces execution even if instance was created already", default=False)
+parser.add_option("-p", "--postgres-password", dest="postgres_password",
+                  help="[REQUIRED] password of the openslides_admin user in postgresql dbms",
+                  metavar="POSTGRES_PASSWORD")
 parser.add_option("-d", "--instances-dir", dest="instances_dir",
                   help="[REQUIRED] directory containing instance data", metavar="INSTANCES_DIR")
 parser.add_option("-r", "--role", dest="ansible_role",
@@ -108,19 +111,16 @@ Options = namedtuple('Options',
 variable_manager = VariableManager()
 
 instance_number = instance_data['number']
-variables = {
-    'openslides_secure_key': random_string(50),
-    'openslides_instance_db_password': random_string(12),
-    'openslides_instance_systemd_port': str(23232 + instance_number * 2),
-    'openslides_instance_port': str(23232 + (instance_number * 2 + 1)),
-    'postgres_host': 'localhost',
-    'postgres_user': 'openslides_admin',
-    'postgres_password': 'asdf'
-}
-
-variables['upload_dir'] = options.upload_dir
-variables['openslides_instance_file'] = instance_file
-variables['openslides_multiinstance_api_url'] = options.multiinstance_url
+variables = {'openslides_secure_key': random_string(50),
+             'openslides_instance_db_password': random_string(12),
+             'openslides_instance_systemd_port': str(23232 + instance_number * 2),
+             'openslides_instance_port': str(23232 + (instance_number * 2 + 1)),
+             'postgres_host': 'localhost',
+             'postgres_user': 'openslides_admin',
+             'postgres_password': options.postgres_password,
+             'upload_dir': options.upload_dir,
+             'openslides_instance_file': instance_file,
+             'openslides_multiinstance_api_url': options.multiinstance_url}
 
 for instance_var in instance_data.keys():
     variables['openslides_instance_' + instance_var] = instance_data[instance_var]

@@ -20,6 +20,8 @@ parser.add_option("-i", "--instance-meta-dir", dest="instance_meta_dir",
 parser.add_option("--versions-meta-dir", dest="versions_meta_dir",
                   help="[REQUIRED] directory containing version meta files",
                   metavar="VERSIONS_META_DIR")
+parser.add_option("-p", "--postgres-password", dest="postgres_password",
+                  help="[REQUIRED] password of the openslides_admin user in postgresql dbms")
 parser.add_option("-d", "--instances-dir", dest="instances_dir",
                   help="[REQUIRED] directory containing instance data", metavar="INSTANCES_DIR")
 parser.add_option("-a", "--python-ansible", dest="python_ansible",
@@ -44,6 +46,7 @@ class Database(jsonapi.base.database.Database):
                        multiinstance_url=options.multiinstance_url,
                        instance_meta_dir=instance_meta_dir,
                        versions_meta_dir=versions_meta_dir,
+                       postgres_password=options.postgres_password,
                        instances_dir=options.instances_dir,
                        python_ansible=options.python_ansible,
                        upload_dir=options.upload_dir)

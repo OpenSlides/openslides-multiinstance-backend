@@ -20,6 +20,7 @@ class Session(jsonapi.base.database.Session):
         self.versions_meta_dir = kwargs['versions_meta_dir']
         self.instances_dir = kwargs['instances_dir']
         self.python_ansible = kwargs['python_ansible']
+        self.postgres_password = kwargs['postgres_password']
         self.multiinstance_url = kwargs['multiinstance_url']
         self.instance_meta_dir = kwargs['instance_meta_dir']
         self.upload_dir = kwargs['upload_dir']
@@ -85,6 +86,7 @@ class Session(jsonapi.base.database.Session):
 
         cmd = [self.python_ansible, playscript, '--instances-dir', self.instances_dir,
                '--role', role,
+               '--postgres-password', self.postgres_password,
                '--multiinstance-url', self.multiinstance_url,
                '--upload-dir', self.upload_dir,
                '--instance-file', instance_filename]
