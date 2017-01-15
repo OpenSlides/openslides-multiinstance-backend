@@ -137,10 +137,6 @@ is_add = role == 'openslides-add-instance'
 if path.exists(instance_path) and is_add and not options.force:
     raise Exception("instance already created")
 
-# TODO: move to role
-if is_add:
-    os.makedirs(instance_path)
-
 variables['openslides_instance_path'] = instance_path
 
 for key, value in variables.items():
@@ -153,7 +149,8 @@ playoptions = Options(connection='local', module_path='/path/to/mymodules', fork
 passwords = dict(vault_pass='secret')
 
 # Instantiate our ResultCallback for handling results as they come in
-results_callback = ResultCallback(path.join(instance_path, 'ansible.log.json'))
+results_callback = ResultCallback(path.join(options.instances_dir,
+                                            'ansible.{}.log.json'.format(variables['openslides_instance_id'])))
 
 # create inventory and pass to var manager
 inventory = Inventory(loader=loader, variable_manager=variable_manager, host_list='localhost')
@@ -173,7 +170,6 @@ play_source = dict(
     ]
 )
 play = Play().load(play_source, variable_manager=variable_manager, loader=loader)
-print(instance_file)
 
 # actually run it
 tqm = None

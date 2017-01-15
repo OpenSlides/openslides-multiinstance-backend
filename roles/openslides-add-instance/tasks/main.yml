@@ -1,4 +1,7 @@
 ---
+- name: Create instance directory
+  file: path={{ openslides_instance_path }} state=directory
+
 - getent: database=passwd
 
 - name: Check variable openslides_secure_key
