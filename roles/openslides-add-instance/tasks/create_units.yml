@@ -29,7 +29,7 @@
   when: createInstanceService.changed or createInstanceSocket.changed or createInstanceProxyService.changed
   command: systemctl daemon-reload
 
-- name: Start and enalbe openslides
+- name: Start and enable openslides
   sudo: yes
   sudo_user: root
   service:
