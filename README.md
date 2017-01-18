@@ -241,7 +241,7 @@ Create the following two files.  Add the above checksum.
       {
           "id": "1",
           "name": "2.1-master",
-          "image": "sha512-<<HASH RETURNED BY rkt>>",
+          "image": "sha512-<<HASH RETURNED BY rkt>>"
       }
     ]
 
@@ -283,7 +283,7 @@ Create the following two files.  Add the above checksum.
 
 ##### Create an instance
 
-    cd ~pythonopenslides/openslides-multiinstance-backend
+    cd ~/openslides-multiinstance-backend/
     curl -X POST --data-binary @example_instance.json \
         -H 'Content-Type: application/vnd.api+json' \
         http://127.0.0.1:5000/api/instances | json_pp
