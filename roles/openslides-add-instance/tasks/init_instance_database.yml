@@ -1,5 +1,7 @@
 ---
 - name: Ensure the PostgreSQL service is running
+  sudo: yes
+  sudo_user: root
   service: name=postgresql state=started enabled=yes
 
 - name: Ensure database is created

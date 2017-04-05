@@ -135,6 +135,15 @@ class Session(jsonapi.base.database.Session):
 
             instance.save(self.instance_meta_dir)
 
+        old_version = old_instance.data['osversion']
+        new_version = instance.data['osversion']
+
+        if new_version is not None and old_version.data['id'] != new_version.data['id']:
+            instance.save(self.instance_meta_dir)
+            instance_filename = instance.get_instance_filename(self.instance_meta_dir)
+            cmd = self.build_play_command(instance_filename, 'openslides-update-instance')
+            self.fork(cmd)
+
         if old_state != new_state:
             if new_state == 'stopped':
                 instance_filename = instance.get_instance_filename(self.instance_meta_dir)

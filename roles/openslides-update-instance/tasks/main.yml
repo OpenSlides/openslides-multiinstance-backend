@@ -1,0 +1,12 @@
+---
+- shell: cat {{ openslides_instance_path }}/rkt-uuid
+  register: rkt_uuid
+
+- include: ../../openslides-add-instance/tasks/recreate_units.yml
+
+- name: Restart openslides Instance
+  sudo: yes
+  sudo_user: root
+  service:
+    name: 'openslides_instance_{{ openslides_instance_id }}.service'
+    state: restarted
