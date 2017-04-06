@@ -47,3 +47,8 @@
 - name: remove backup projector logo file
   when: logo_path.stat.exists == True
   file: path={{ openslides_instance_path }}/logo-projector.png state=absent
+
+- name: Change file permissions
+  sudo: yes
+  sudo_user: root
+  file: path={{ openslides_instance_path }} recurse=yes owner={{ username_on_the_host}}
