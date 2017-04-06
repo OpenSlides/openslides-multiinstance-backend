@@ -5,7 +5,7 @@
   register: createInstanceService
   template:
     dest: '/etc/systemd/system/{{ openslides_instance_service_name }}.service'
-    src: "openslides_instance.service.j2"
+    src: "./openslides_instance.service.j2"
 
 - name: Create systemd units for openslides
   sudo: yes
@@ -13,7 +13,7 @@
   register: createInstanceProxyService
   template:
     dest: '/etc/systemd/system/openslides_instance_proxy_{{ openslides_instance_id }}.service'
-    src: "openslides_instance_proxy.service.j2"
+    src: "./openslides_instance_proxy.service.j2"
 
 - name: Create openslides proxy service unit for socket activation
   sudo: yes
@@ -21,7 +21,7 @@
   register: createInstanceSocket
   template:
     dest: '/etc/systemd/system/openslides_instance_proxy_{{ openslides_instance_id }}.socket'
-    src: "openslides_instance_proxy.socket.j2"
+    src: "./openslides_instance_proxy.socket.j2"
 
 - name: Reload systemd units
   sudo: yes

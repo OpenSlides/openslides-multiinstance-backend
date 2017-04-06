@@ -1,6 +1,20 @@
 ---
-- shell: cat {{ openslides_instance_path }}/rkt-uuid
-  register: rkt_uuid
+- stat: path={{ openslides_instance_path }}/static/img/logo-projector.png
+  register: logo_path
+
+- name: Copy projector logo file
+  when: logo_path.stat.exists == True
+  copy: src={{ openslides_instance_path }}/static/img/logo-projector.png dest={{ openslides_instance_path }}/logo-projector.png
+
+- name: Remove old static files
+  sudo: yes
+  sudo_user: root
+  file: path={{ openslides_instance_path }}/static state=absent
+
+- name: Remove old uuid file
+  sudo: yes
+  sudo_user: root
+  file: path={{ openslides_instance_path }}/rkt-uuid state=absent
 
 - include: ../../openslides-add-instance/tasks/recreate_units.yml
 
@@ -10,3 +24,26 @@
   service:
     name: 'openslides_instance_{{ openslides_instance_id }}.service'
     state: restarted
+
+- wait_for: path={{ openslides_instance_path }}/rkt-uuid
+
+- pause: seconds=15
+
+- shell: cat {{ openslides_instance_path }}/rkt-uuid
+  register: rkt_uuid
+
+- set_fact:
+    openslides_rkt_manage: /usr/bin/rkt enter {{ rkt_uuid.stdout }} /app/manage.py
+
+- name: Collect static
+  sudo: yes
+  sudo_user: root
+  command: '{{ openslides_rkt_manage }} collectstatic --noinput --clear'
+
+- name: Copy projector logo file
+  when: logo_path.stat.exists == True
+  copy: src={{ openslides_instance_path }}/logo-projector.png dest={{ openslides_instance_path }}/static/img/logo-projector.png
+
+- name: remove backup projector logo file
+  when: logo_path.stat.exists == True
+  file: path={{ openslides_instance_path }}/logo-projector.png state=absent

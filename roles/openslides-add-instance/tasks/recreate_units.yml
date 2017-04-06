@@ -1,13 +1,13 @@
 ---
 # save pod manifeste
-- name: Get POD manifest for starting later
-  sudo: yes
-  sudo_user: root
-  command: /usr/bin/rkt cat-manifest {{ rkt_uuid.stdout }}
-  register: rkt_manifest
-- copy:
-    content: "{{ rkt_manifest.stdout }}"
-    dest: '{{ openslides_instance_path }}/rkt-manifest'
+#- name: Get POD manifest for starting later
+#  sudo: yes
+#  sudo_user: root
+#  command: /usr/bin/rkt cat-manifest {{ rkt_uuid.stdout }}
+#  register: rkt_manifest
+#- copy:
+#    content: "{{ rkt_manifest.stdout }}"
+#    dest: '{{ openslides_instance_path }}/rkt-manifest'
 
 - getent: database=passwd
 
