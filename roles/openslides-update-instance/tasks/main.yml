@@ -52,3 +52,9 @@
   sudo: yes
   sudo_user: root
   file: path={{ openslides_instance_path }} recurse=yes owner={{ username_on_the_host}}
+
+- name: Migrate database
+  sudo: yes
+  sudo_user: root
+  command: '{{ openslides_rkt_manage }} migrate --noinput'
+
