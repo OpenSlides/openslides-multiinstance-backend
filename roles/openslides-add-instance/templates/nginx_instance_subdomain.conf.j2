@@ -20,8 +20,8 @@ server {
     ssl_certificate      /etc/ssl/private/openslides-container-cert.pem;
     ssl_certificate_key  /etc/ssl/private/openslides-container-cert.key;
 
-    location /media {
-        alias {{openslides_instance_path}}/data/media;
+    location /media/ {
+        alias {{openslides_instance_path}}/data/media/;
     }
 
     location /static {

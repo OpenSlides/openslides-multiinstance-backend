@@ -3,8 +3,8 @@ server {
 
 	server_name {{ openslides_instance_slug }}.{{ openslides_instance_parent_domain }};
 
-    location /media {
-        alias {{openslides_instance_path}}/data/media;
+    location /media/ {
+        alias {{openslides_instance_path}}/data/media/;
     }
 
     location /static {
