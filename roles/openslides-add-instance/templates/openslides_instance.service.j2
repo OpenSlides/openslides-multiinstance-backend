@@ -1,8 +1,6 @@
 [Unit]
 Description=Openslides Instance
 Wants=network.target
-Requires=nginx.service
-After=nginx.service
 
 [Service]
 # Environment="PYTHONPATH=/home/ab/git/OpenSlides:{{ openslides_instance_path }}"
