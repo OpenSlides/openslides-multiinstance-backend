@@ -1,10 +1,22 @@
 server {
-	listen 80;
+    listen 80;
 
-	server_name {{ openslides_instance_slug }}.{{ openslides_instance_parent_domain }};
+    server_name {{ openslides_instance_slug }}.{{ openslides_instance_parent_domain }};
 
-    location /media/ {
-        alias {{openslides_instance_path}}/data/media/;
+    location ~* ^/(?!ws|wss|webclient|core/servertime|core/version|users/whoami|users/login|users/logout|users/setpassword|motions/docxtemplate|projector|real-projector|static|media|rest).*$ {
+        rewrite ^.*$ /static/templates/index.html;
+    }
+
+    location ~* ^/projector.*$ {
+        rewrite ^.*$ /static/templates/projector-container.html;
+    }
+
+    location ~* ^/real-projector.*$ {
+        rewrite ^.*$ /static/templates/projector.html;
+    }
+
+    location ~* ^/webclient.*$ {
+        rewrite ^/webclient/(site|projector).*$ /static/js/webclient-$1.js;
     }
 
     location /static {
