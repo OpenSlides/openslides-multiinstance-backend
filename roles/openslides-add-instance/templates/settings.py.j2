@@ -8,10 +8,7 @@ SECRET_KEY = '{{ openslides_secure_key }}'
 DATABASES = {
   'default': {% include setting_db_template %}
 }
-# MEDIA_ROOT = '/home/ab/tmp/instances/example/data/media/'
-# SEARCH_INDEX = '/home/ab/tmp/instances/example/data/search_index/'
 MEDIA_ROOT = '/data/data/media/'
-SEARCH_INDEX = '/data/data/search_index/'
 STATIC_URL = '/static/'
 STATIC_ROOT = '/data/static/'
 
@@ -26,7 +23,7 @@ CACHES = {
        "OPTIONS": {
            "CLIENT_CLASS": "django_redis.client.DefaultClient",
        },
-       "KEY_PREFIX": "openslides-cache-{{ openslides_instance_id }}'",
+       "KEY_PREFIX": "openslides-cache-{{ openslides_instance_id }}",
    }
 }
 
@@ -34,3 +31,18 @@ SESSION_ENGINE = 'redis_sessions.session'
 SESSION_REDIS_HOST = '172.16.28.1'
 SESSION_REDIS_PORT = 6379
 SESSION_REDIS_DB = 0
+
+# The restricted data cache caches the data individual for each user.
+# This requires a lot of memory if there are a lot of active users.
+DISABLE_USER_CACHE = True
+
+# OpenSlides plugins
+INSTALLED_PLUGINS += (
+#    'plugin_module_name',
+
+# Built-in plugins:
+#    'tests.example_data_generator',
+)
+INSTALLED_APPS += INSTALLED_PLUGINS
+
+DEBUG = False
