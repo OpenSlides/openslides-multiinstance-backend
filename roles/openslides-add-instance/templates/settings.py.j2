@@ -4,6 +4,10 @@ TIME_ZONE = 'Europe/Berlin'
 
 SECRET_KEY = '{{ openslides_secure_key }}'
 
+# Email settings
+EMAIL_HOST = '172.16.28.1'
+EMAIL_PORT = 25
+
 # TODO: fill in postgresql credentials
 DATABASES = {
   'default': {% include setting_db_template %}
