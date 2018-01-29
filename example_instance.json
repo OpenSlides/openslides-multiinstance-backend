@@ -13,8 +13,7 @@
           "event_name": "Konferenz 1",
           "event_description": "Dies ist eine Test-Instanz",
           "event_date": "2016-11-11",
-          "event_location": "Hamburg",
-          "event_organizer": "OpenSlides"
+          "event_location": "Hamburg"
       },
       "relationships": {
         "osversion": {

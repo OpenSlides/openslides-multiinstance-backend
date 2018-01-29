@@ -51,7 +51,6 @@
       - { key: 'general_event_description', value: '{{ openslides_instance_event_description }}' }
       - { key: 'general_event_date', value: '{{ openslides_instance_event_date }}' }
       - { key: 'general_event_location', value: '{{ openslides_instance_event_location }}' }
-      - { key: 'general_event_organizer', value: '{{ openslides_instance_event_organizer }}' }
 
 # - name: Activate anonymous user
 #   when: openslidesMigratedDatabase.changed
