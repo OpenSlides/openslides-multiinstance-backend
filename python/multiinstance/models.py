@@ -52,7 +52,6 @@ class Instance(SimpleApiObject):
     event_description = ObjectAttribute("event_description")
     event_date = ObjectAttribute("event_date")
     event_location = ObjectAttribute("event_location")
-    event_organizer = ObjectAttribute("event_organizer")
 
     projector_logo = ObjectAttribute("projector_logo")
 
