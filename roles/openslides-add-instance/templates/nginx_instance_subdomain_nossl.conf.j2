@@ -3,7 +3,7 @@ server {
 
     server_name {{ openslides_instance_slug }}.{{ openslides_instance_parent_domain }};
 
-    location ~* ^/(?!ws|wss|webclient|core/servertime|core/version|users/whoami|users/login|users/logout|users/setpassword|motions/docxtemplate|projector|real-projector|static|media|rest).*$ {
+    location ~* ^/(?!ws|wss|webclient|core/servertime|core/version|users/whoami|users/login|users/logout|users/setpassword|motions/docxtemplate|agenda/docxtemplate|projector|real-projector|static|media|rest).*$ {
         rewrite ^.*$ /static/templates/index.html;
     }
 
