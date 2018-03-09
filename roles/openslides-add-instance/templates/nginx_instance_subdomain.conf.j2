@@ -21,7 +21,7 @@ server {
     ssl_certificate_key  /etc/ssl/private/openslides-container-cert.key;
 
 
-    location ~* ^/(?!ws|wss|webclient|core/servertime|core/version|users/whoami|users/login|users/logout|users/setpassword|motions/docxtemplate|projector|real-projector|static|media|rest).*$ {
+    location ~* ^/(?!ws|wss|webclient|core/servertime|core/version|users/whoami|users/login|users/logout|users/setpassword|motions/docxtemplate|agenda/docxtemplate|projector|real-projector|static|media|rest).*$ {
         rewrite ^.*$ /static/templates/index.html;
     }
 
