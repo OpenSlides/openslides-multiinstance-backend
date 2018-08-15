@@ -32,9 +32,11 @@ CACHES = {
 }
 
 SESSION_ENGINE = 'redis_sessions.session'
-SESSION_REDIS_HOST = '172.16.28.1'
-SESSION_REDIS_PORT = 6379
-SESSION_REDIS_DB = 0
+SESSION_REDIS = {
+    'host': '172.16.28.1',
+    'port': '6379',
+    'db': 0,
+}
 
 # The restricted data cache caches the data individual for each user.
 # This requires a lot of memory if there are a lot of active users.
