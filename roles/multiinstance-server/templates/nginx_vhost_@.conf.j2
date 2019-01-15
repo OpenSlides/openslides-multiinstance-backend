@@ -1,7 +1,0 @@
-server {
-    server_name {{ openslides_nginx_domains|join(' ') }};
-    listen 0.0.0.0:{{ openslides_nginx_port }};
-    listen [::]:{{ openslides_nginx_port }};
-
-    {% include '_nginx_locations.j2' %}
-}

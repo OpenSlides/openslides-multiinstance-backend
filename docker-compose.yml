@@ -1,4 +1,0 @@
-host:
-    build: .
-    volumes:
-        - ./supervisord.conf:/etc/supervisord.conf

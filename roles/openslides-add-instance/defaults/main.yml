@@ -1,3 +1,0 @@
----
-openslides_settings_path: '{{ openslides_instance_path }}'
-openslides_instance_service_name: 'openslides_instance_{{ openslides_instance_id }}'
